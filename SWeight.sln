@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2016
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SWeight", "SWeight.csproj", "{5585B33D-77D1-4CEC-9FF3-76C477779F79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5585B33D-77D1-4CEC-9FF3-76C477779F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5585B33D-77D1-4CEC-9FF3-76C477779F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5585B33D-77D1-4CEC-9FF3-76C477779F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5585B33D-77D1-4CEC-9FF3-76C477779F79}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {54317052-97F1-48D9-B875-CFBD02B82BCD}
+	EndGlobalSection
+EndGlobal
