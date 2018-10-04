@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//using System.ComponentModel;
+//using System.Drawing;
+//using System.Linq;
+//using System.Text;
+//using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Data;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 
@@ -138,30 +138,9 @@ namespace SWeight
             dataGridView_Monitors.Columns[0].ReadOnly = true;
         }
 
-        private void ButtonReadFromFile_Click(object sender, EventArgs e)
+        private void buttonReadFromFile_Click(object sender, EventArgs e)
         {
-
+            var dt = CSVParser.CSV2DataTable("C:\\Users\\bdrum\\Desktop\\TJ-01-18-35-i.ves");
         }
-
-        private void buttonSave2File_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void buttonAddRow_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void buttonSave2DB_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void buttonSaveWeight_Click(object sender, EventArgs e)
-        {
-
-        }
-
     }
 }

@@ -363,6 +363,7 @@
             this.buttonReadFromFile.TabIndex = 5;
             this.buttonReadFromFile.Text = "Считать из файла";
             this.buttonReadFromFile.UseVisualStyleBackColor = true;
+            this.buttonReadFromFile.Click += new System.EventHandler(this.buttonReadFromFile_Click);
             // 
             // buttonSave2File
             // 
