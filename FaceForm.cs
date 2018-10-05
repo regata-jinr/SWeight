@@ -10,8 +10,8 @@ using System.Data;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-
+using System.IO;
+using System.Collections;
 
 namespace SWeight
 {
@@ -90,6 +90,11 @@ namespace SWeight
         {
             TabPage current = (sender as TabControl).SelectedTab;
             DataGridFilling(tabSelects[current.Name], tabDgvs[current.Name][0]);
+            if (current.Name == "tabSamples")
+                buttonAddRow.Enabled = false;
+            else
+                buttonAddRow.Enabled = true;
+
         }
 
 
@@ -99,15 +104,15 @@ namespace SWeight
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_SamplesSet.Rows[index];
             string select = $"select A_Sample_ID, A_Client_Sample_ID, P_Weighting_SLI, P_Weighting_LLI from NAA_DB.dbo.table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
-           DataGridFilling(select, dataGridView_Samples);
+            DataGridFilling(select, dataGridView_Samples);
             if (dataGridView_Samples.RowCount == 0) return;
             dataGridView_Samples.CurrentCell = dataGridView_Samples[0, 0];
-           dataGridView_Samples.Columns[0].HeaderText = "номер образца";
-           dataGridView_Samples.Columns[1].HeaderText = "клиентский номер образца";
-           dataGridView_Samples.Columns[2].HeaderText = "вес, г (КЖИ)";
-           dataGridView_Samples.Columns[3].HeaderText = "вес, г(ДЖИ)";
-           dataGridView_Samples.Columns[0].ReadOnly = true;
-           dataGridView_Samples.Columns[1].ReadOnly = true;
+            dataGridView_Samples.Columns[0].HeaderText = "номер образца";
+            dataGridView_Samples.Columns[1].HeaderText = "клиентский номер образца";
+            dataGridView_Samples.Columns[2].HeaderText = "вес, г (КЖИ)";
+            dataGridView_Samples.Columns[3].HeaderText = "вес, г(ДЖИ)";
+            dataGridView_Samples.Columns[0].ReadOnly = true;
+            dataGridView_Samples.Columns[1].ReadOnly = true;
         }
 
         private void dataGridView_StandartsSet_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -138,9 +143,109 @@ namespace SWeight
             dataGridView_Monitors.Columns[0].ReadOnly = true;
         }
 
+        //todo: complete this action
         private void buttonReadFromFile_Click(object sender, EventArgs e)
         {
-            var dt = CSVParser.CSV2DataTable("C:\\Users\\bdrum\\Desktop\\TJ-01-18-35-i.ves");
+            TabPage current = tabs.SelectedTab;
+            string[] FileNameArray = new string[5];
+            string fileName = "";
+
+            if (openFileDialog_ReadFromFile.ShowDialog() == DialogResult.OK)
+            {
+                fileName = Path.GetFileNameWithoutExtension(openFileDialog_ReadFromFile.FileName);
+
+                if (fileName.Split('-').Length != 5)
+                {
+                    MessageBox.Show($"Имя файла должно содержать 'countryCode-clientId-year-SampleSetId-SampleSetIndex.ves'", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                FileNameArray = fileName.Split('-');
+                for (var i = 0; i < 5; ++i)
+                {
+                    if (FileNameArray[i] != tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString())
+                    {
+                        MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Выберите одинаковые партии", "Match", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                        //DialogResult dialogResult = MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Хотите выбрать одинаковые партии?", "Match", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+                        //if (dialogResult == DialogResult.OK)
+                        //{
+                        //    SelectStringByValues(tabDgvs[current.Name][0], FileNameArray)
+                        //}
+                        //else if (dialogResult == DialogResult.Cancel)
+                        //{
+                        //    break;
+                        //}
+                    }
+                }
+
+                var dt = CSVParser.CSV2DataTable(openFileDialog_ReadFromFile.FileName);
+               // tabDgvs[current.Name][1].Rows.Clear();
+                tabDgvs[current.Name][1].DataSource = dt;
+                return;
+
+            }
+            else
+            {
+                return;
+            }
+
+        }
+
+        //TODO: add opp. to search and select row in dgv by given file name
+        private void SelectStringByValues(DataGridView dgv, string[] strArr)
+        {
+            int rowIndex;
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                for (var j = 0; j < 5; ++j)
+                {
+                    if (row.Cells[0].Value.ToString().Equals(strArr[j]))
+                    {
+                    }
+                    else
+                    {
+                    }
+                }
+            }
+        }
+
+        private void buttonSave2File_Click(object sender, EventArgs e)
+        {
+            TabPage current = tabs.SelectedTab;
+            string[] FileNameArray = new string[5];
+            string fileName = "";
+            ArrayList header = new ArrayList();
+            header.Add($"Код страны: ");
+            header.Add($"Клиент: ");
+            header.Add($"Год: ");
+            header.Add($"Номер партии образцов: ");
+            header.Add($"Индекс партии образцов: ");
+            header.Add($"Тип образцов: -");
+            header.Add($"Количество образцов: {tabDgvs[current.Name][1].RowCount}");
+            header.Add($"--------------------------------------------------");
+            header.Add($"Номер 	Инд. + 	Вес 	Вес");
+            header.Add($"измер. 	№ обр. 	КЖИ, г 	ДЖИ, г");
+
+            for (int i = 0; i < 5; ++i)
+            {
+                fileName += $"{tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString()}-";
+                header[i] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
+            }
+            saveFileDialog_Save2File.FileName = fileName.Substring(0, fileName.Length - 1);
+            if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
+            {
+                CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, tabDgvs[current.Name][0].SelectedRows[0].Cells[4].Value.ToString());
+                return;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        private void buttonAddRow_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
