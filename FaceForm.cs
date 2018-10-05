@@ -13,6 +13,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 
+
+//TODO: add try catch
+
 namespace SWeight
 {
     public partial class FaceForm : Form
@@ -43,7 +46,6 @@ namespace SWeight
             tabButtonName.Add("tabSamples", "образеца");
             tabButtonName.Add("tabStandarts", "стандарта");
             tabButtonName.Add("tabMonitors", "монитора");
-
         }
 
         public FaceForm()
@@ -72,23 +74,23 @@ namespace SWeight
 
         private void DataGridFilling(String select, DataGridView dgv)
         {
+            TabPage current = tabs.SelectedTab;
             if (con.State == ConnectionState.Closed)
-            {
                 con = Connect2DB();
-            }
             var dataAdapter = new SqlDataAdapter(select, con);
             var commandBuilder = new SqlCommandBuilder(dataAdapter);
             var ds = new DataSet();
             dataAdapter.Fill(ds);
             dgv.DataSource = ds.Tables[0];
+            con.Close();
             if (dgv.RowCount == 0) return;
             dgv.CurrentCell = dgv[0, dgv.RowCount - 1];
-
         }
 
         void tabs_Selecting(object sender, TabControlCancelEventArgs e)
         {
             TabPage current = (sender as TabControl).SelectedTab;
+            if (tabDgvs[current.Name][0].RowCount != 0) return;
             DataGridFilling(tabSelects[current.Name], tabDgvs[current.Name][0]);
             if (current.Name == "tabSamples")
                 buttonAddRow.Enabled = false;
@@ -96,8 +98,6 @@ namespace SWeight
                 buttonAddRow.Enabled = true;
 
         }
-
-
 
         private void dataGridView_SamplesSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -226,26 +226,72 @@ namespace SWeight
             header.Add($"Номер 	Инд. + 	Вес 	Вес");
             header.Add($"измер. 	№ обр. 	КЖИ, г 	ДЖИ, г");
 
-            for (int i = 0; i < 5; ++i)
+            int num = 0;
+            string add2Num = "";
+
+            if (tabDgvs[current.Name][0].ColumnCount < 5)
+            {
+                fileName += "s-s-s-";
+                header[0] += "s";
+                header[1] += "s";
+                header[2] += "s";
+                num = 3;
+                add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[0].Value.ToString();
+            }
+            else add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[4].Value.ToString();
+
+            for (int i = 0; i < tabDgvs[current.Name][0].ColumnCount; ++i)
             {
                 fileName += $"{tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString()}-";
-                header[i] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
+                header[i+num] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
             }
             saveFileDialog_Save2File.FileName = fileName.Substring(0, fileName.Length - 1);
             if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
             {
-                CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, tabDgvs[current.Name][0].SelectedRows[0].Cells[4].Value.ToString());
+                CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
                 return;
             }
-            else
-            {
-                return;
-            }
+            else { return;}
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)
         {
+            TabPage current = tabs.SelectedTab;
+            int cnt = tabDgvs[current.Name][1].RowCount;
+            DataTable dt = new DataTable(); // tabDataSets[current.Name].Tables[0];
+            dt = (DataTable) tabDgvs[current.Name][1].DataSource;
+            dt.Rows.Add();
+            dt.Rows[cnt][0] = (cnt+1).ToString("D2");
+            tabDgvs[current.Name][1].DataSource = dt;
+        }
 
+        private void FaceForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void buttonSave2DB_Click(object sender, EventArgs e)
+        {
+            return;
+            try
+            {
+                TabPage current = tabs.SelectedTab;
+                if (con.State == ConnectionState.Closed)
+                    con = Connect2DB();
+                SqlCommand sCmd = new SqlCommand();
+                sCmd.CommandType = CommandType.Text;
+                sCmd.Connection = con;
+                foreach (DataGridViewRow row in tabDgvs[current.Name][1].Rows)
+                {
+                    sCmd.CommandText = "update table set where";
+                    sCmd.ExecuteNonQuery();
+                }
+                con.Close();
+
+            }
+            catch (SqlException sqlEx) {MessageBox.Show($"SQL exception:\n {sqlEx.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);}
+            catch (Exception ex) { MessageBox.Show($"Exception message:\n {ex.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            finally {Application.Restart();}
         }
     }
 }

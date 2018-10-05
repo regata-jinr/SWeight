@@ -400,6 +400,7 @@
             this.buttonSave2DB.TabIndex = 8;
             this.buttonSave2DB.Text = "Сохранить данные в БД";
             this.buttonSave2DB.UseVisualStyleBackColor = true;
+            this.buttonSave2DB.Click += new System.EventHandler(this.buttonSave2DB_Click);
             // 
             // buttonReadWeight
             // 
@@ -439,6 +440,7 @@
             this.Name = "FaceForm";
             this.ShowIcon = false;
             this.Text = "Взвешивание образцов";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
             this.groupBoxType.ResumeLayout(false);
             this.groupBoxType.PerformLayout();
             this.tabs.ResumeLayout(false);

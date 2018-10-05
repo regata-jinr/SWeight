@@ -60,6 +60,7 @@ namespace SWeight
         {
             StreamWriter sW = new StreamWriter(path);
             string delim = "\t";
+            string val = "";
             foreach (string head in header)
                 sW.WriteLine(head);
 
@@ -68,10 +69,13 @@ namespace SWeight
                 string lines = (row+1).ToString("D2");
                 for (int col = 0; col < dgv.ColumnCount; ++col)
                 {
-                    if (col == 1) continue;
+                    if (col == 1 && dgv.ColumnCount == 4) continue;
                     if (col == 0)
                         delim += AddToNum;
-                    lines += (string.IsNullOrEmpty(lines) ? "" : delim) + dgv.Rows[row].Cells[col].Value.ToString();
+                    val = dgv.Rows[row].Cells[col].Value.ToString();
+                    if (string.IsNullOrEmpty(val))
+                        val = "0";
+                    lines += (string.IsNullOrEmpty(lines) ? "" : delim) + val;
                     if (col == 0)
                         delim = "\t";
 
@@ -79,6 +83,7 @@ namespace SWeight
                 sW.WriteLine(lines);
             }
             sW.Close();
+            MessageBox.Show("Сохранение завершено!");
         }
     }
 }
