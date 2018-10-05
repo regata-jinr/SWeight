@@ -53,6 +53,8 @@
             this.buttonAddRow = new System.Windows.Forms.Button();
             this.buttonSave2DB = new System.Windows.Forms.Button();
             this.buttonReadWeight = new System.Windows.Forms.Button();
+            this.openFileDialog_ReadFromFile = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog_Save2File = new System.Windows.Forms.SaveFileDialog();
             this.groupBoxType.SuspendLayout();
             this.tabs.SuspendLayout();
             this.tabSamples.SuspendLayout();
@@ -356,6 +358,7 @@
             // 
             // buttonReadFromFile
             // 
+            this.buttonReadFromFile.Enabled = false;
             this.buttonReadFromFile.Location = new System.Drawing.Point(963, 188);
             this.buttonReadFromFile.Margin = new System.Windows.Forms.Padding(4);
             this.buttonReadFromFile.Name = "buttonReadFromFile";
@@ -374,9 +377,11 @@
             this.buttonSave2File.TabIndex = 6;
             this.buttonSave2File.Text = "Сохранить в файл";
             this.buttonSave2File.UseVisualStyleBackColor = true;
+            this.buttonSave2File.Click += new System.EventHandler(this.buttonSave2File_Click);
             // 
             // buttonAddRow
             // 
+            this.buttonAddRow.Enabled = false;
             this.buttonAddRow.Location = new System.Drawing.Point(963, 430);
             this.buttonAddRow.Margin = new System.Windows.Forms.Padding(4);
             this.buttonAddRow.Name = "buttonAddRow";
@@ -384,6 +389,7 @@
             this.buttonAddRow.TabIndex = 7;
             this.buttonAddRow.Text = "Добавить строку";
             this.buttonAddRow.UseVisualStyleBackColor = true;
+            this.buttonAddRow.Click += new System.EventHandler(this.buttonAddRow_Click);
             // 
             // buttonSave2DB
             // 
@@ -394,6 +400,7 @@
             this.buttonSave2DB.TabIndex = 8;
             this.buttonSave2DB.Text = "Сохранить данные в БД";
             this.buttonSave2DB.UseVisualStyleBackColor = true;
+            this.buttonSave2DB.Click += new System.EventHandler(this.buttonSave2DB_Click);
             // 
             // buttonReadWeight
             // 
@@ -404,6 +411,17 @@
             this.buttonReadWeight.TabIndex = 9;
             this.buttonReadWeight.Text = "Взвесить";
             this.buttonReadWeight.UseVisualStyleBackColor = true;
+            // 
+            // openFileDialog_ReadFromFile
+            // 
+            this.openFileDialog_ReadFromFile.Filter = "ves files (*.ves)|*.ves|All files (*.*)|*.*";
+            this.openFileDialog_ReadFromFile.RestoreDirectory = true;
+            this.openFileDialog_ReadFromFile.Title = "Выберите весовой файл";
+            // 
+            // saveFileDialog_Save2File
+            // 
+            this.saveFileDialog_Save2File.Filter = "ves files (*.ves)|*.ves|All files (*.*)|*.*";
+            this.saveFileDialog_Save2File.RestoreDirectory = true;
             // 
             // FaceForm
             // 
@@ -422,6 +440,7 @@
             this.Name = "FaceForm";
             this.ShowIcon = false;
             this.Text = "Взвешивание образцов";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
             this.groupBoxType.ResumeLayout(false);
             this.groupBoxType.PerformLayout();
             this.tabs.ResumeLayout(false);
@@ -471,6 +490,8 @@
         private System.Windows.Forms.DataGridView dataGridView_MonitorsSet;
         private System.Windows.Forms.DataGridView dataGridView_Standarts;
         private System.Windows.Forms.DataGridView dataGridView_Monitors;
+        private System.Windows.Forms.OpenFileDialog openFileDialog_ReadFromFile;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog_Save2File;
     }
 }
 
