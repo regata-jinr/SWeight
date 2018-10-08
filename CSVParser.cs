@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.IO;
 using Microsoft.VisualBasic.FileIO;
-using System.Diagnostics;
+//using System.Diagnostics;
 using System.Collections;
 
 namespace SWeight
