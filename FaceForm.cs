@@ -86,6 +86,7 @@ namespace SWeight
                 buttonAddRow.Enabled = true;
         }
 
+        // we allow to users save weight (double value) from dgv. Without checking it allows to use sql injections. Let's add ValueType to columns with weight in oder to avoid it.
         private void dataGridView_SamplesSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int index = e.RowIndex;// get the Row Index
@@ -95,8 +96,10 @@ namespace SWeight
             if (dataGridView_Samples.RowCount == 0) return;
             dataGridView_Samples.CurrentCell = dataGridView_Samples[0, 0];
             dataGridView_Samples.Columns[0].HeaderText = "номер образца";
+            dataGridView_Samples.Columns[1].ValueType = typeof(double);
             dataGridView_Samples.Columns[1].HeaderText = "вес, г (КЖИ)";
             dataGridView_Samples.Columns[2].HeaderText = "вес, г(ДЖИ)";
+            dataGridView_Samples.Columns[2].ValueType = typeof(double);
             dataGridView_Samples.Columns[3].HeaderText = "клиентский номер образца";
             dataGridView_Samples.Columns[0].ReadOnly = true;
             dataGridView_Samples.Columns[3].ReadOnly = true;
@@ -112,7 +115,9 @@ namespace SWeight
             dataGridView_Standarts.CurrentCell = dataGridView_Standarts[0, 0];
             dataGridView_Standarts.Columns[0].HeaderText = "номер стандарта";
             dataGridView_Standarts.Columns[1].HeaderText = "вес, г (КЖИ)";
+            dataGridView_Standarts.Columns[1].ValueType = typeof(double);
             dataGridView_Standarts.Columns[2].HeaderText = "вес, г(ДЖИ)";
+            dataGridView_Standarts.Columns[2].ValueType = typeof(double);
             dataGridView_Standarts.Columns[0].ReadOnly = true;
         }
 
@@ -126,7 +131,9 @@ namespace SWeight
             dataGridView_Monitors.CurrentCell = dataGridView_Monitors[0, 0];
             dataGridView_Monitors.Columns[0].HeaderText = "номер монитора";
             dataGridView_Monitors.Columns[1].HeaderText = "вес, г (КЖИ)";
+            dataGridView_Monitors.Columns[1].ValueType = typeof(double);
             dataGridView_Monitors.Columns[2].HeaderText = "вес, г(ДЖИ)";
+            dataGridView_Monitors.Columns[2].ValueType = typeof(double);
             dataGridView_Monitors.Columns[0].ReadOnly = true;
         }
 
@@ -153,6 +160,7 @@ namespace SWeight
                     {
                         MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Выберите одинаковые партии", "Match", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         return;
+                        //TODO: add opp. to search and select row in dgv by given file name
                         //DialogResult dialogResult = MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Хотите выбрать одинаковые партии?", "Match", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
                         //if (dialogResult == DialogResult.OK)
                         //{
@@ -166,7 +174,7 @@ namespace SWeight
                 }
 
                 var dt = CSVParser.CSV2DataTable(openFileDialog_ReadFromFile.FileName);
-               // tabDgvs[current.Name][1].Rows.Clear();
+                // tabDgvs[current.Name][1].Rows.Clear();
                 tabDgvs[current.Name][1].DataSource = dt;
                 return;
 
@@ -230,7 +238,7 @@ namespace SWeight
             for (int i = 0; i < tabDgvs[current.Name][0].ColumnCount; ++i)
             {
                 fileName += $"{tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString()}-";
-                header[i+num] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
+                header[i + num] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
             }
             saveFileDialog_Save2File.FileName = fileName.Substring(0, fileName.Length - 1);
             if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
@@ -238,7 +246,7 @@ namespace SWeight
                 CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
                 return;
             }
-            else { return;}
+            else { return; }
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)
@@ -246,9 +254,9 @@ namespace SWeight
             TabPage current = tabs.SelectedTab;
             int cnt = tabDgvs[current.Name][1].RowCount;
             DataTable dt = new DataTable(); // tabDataSets[current.Name].Tables[0];
-            dt = (DataTable) tabDgvs[current.Name][1].DataSource;
+            dt = (DataTable)tabDgvs[current.Name][1].DataSource;
             dt.Rows.Add();
-            dt.Rows[cnt][0] = (cnt+1).ToString("D2");
+            dt.Rows[cnt][0] = (cnt + 1).ToString("D2");
             tabDgvs[current.Name][1].DataSource = dt;
         }
 
@@ -261,7 +269,22 @@ namespace SWeight
         {
             TabPage current = tabs.SelectedTab;
             DataGridViewWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name], con);
-           // return;
+            // return;
+        }
+
+        private void dataGridView_Samples_DataError(object sender, DataGridViewDataErrorEventArgs anError)
+        {
+            MessageBox.Show("The most probably you are trying to use no-number format in weight columns. We can't allow to do it, because in the other case it will allow to use sql-injection. Please use only number formats (01,10,1,10.23,...)", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void dataGridView_Standarts_DataError(object sender, DataGridViewDataErrorEventArgs anError)
+        {
+            MessageBox.Show("The most probably you are trying to use no-number format in weight columns. We can't allow to do it, because in the other case it will allow to use sql-injection. Please use only number formats (01,10,1,10.23,...)", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        private void dataGridView_Monitors_DataError(object sender, DataGridViewDataErrorEventArgs anError)
+        {
+            MessageBox.Show("The most probably you are trying to use no-number format in weight columns. We can't allow to do it, because in the other case it will allow to use sql-injection. Please use only number formats (01,10,1,10.23,...)", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }

@@ -40,29 +40,25 @@ namespace SWeight
                 sCmd.Connection = con;
                 sCmd.CommandText = GenerateCountQuery(dgvs, table_name);
                 cnt = (int)sCmd.ExecuteScalar();
-                Debug.WriteLine(cnt.ToString());
+                //todo: patch...
                 if (!table_name.ToLower().Contains("sample"))
                     sCmd.CommandText = GenerateSetWeightQuery(dgvs, table_name);
                 setWeight = Convert.ToDouble(sCmd.ExecuteScalar());
-                Debug.WriteLine(sCmd.CommandText);
-                Debug.WriteLine(setWeight.ToString());
-                return;
-                if (cnt == 1) { sCmd.CommandText = GenerateUpdateQuery(dgvs, table_name); }
-                else if (cnt == 0) { sCmd.CommandText = GenerateInsertQuery(dgvs, table_name,0,setWeight); }
+                //todo: add set_weight to insert values
+                if (cnt == 1) { GenerateUpdateQuery(dgvs, table_name, sCmd); }
+                else if (cnt == 0) {GenerateInsertQuery(dgvs, table_name, sCmd, 0,setWeight); }
                 else
                 {
-                    MessageBox.Show($"The query could be ambiguous. Check your sql-statements.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"The query might be ambiguous. Check your sql-statements.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                Debug.WriteLine(sCmd.CommandText);
-               // sCmd.ExecuteNonQuery();
                 con.Close();
             }
             catch (SqlException sqlEx) { MessageBox.Show($"SQL exception:\n {sqlEx.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
             catch (Exception ex) { MessageBox.Show($"Exception message:\n {ex.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
-        private static string GenerateUpdateQuery(DataGridView[] dgvs, string table_name, int index = 0)
+        private static void GenerateUpdateQuery(DataGridView[] dgvs, string table_name, SqlCommand sCmd, int index = 0)
         {
             string tempString1 = "";
             string tempString2 = "";
@@ -73,11 +69,13 @@ namespace SWeight
                 tempString2 += $"{col.Name}='{dgvs[0].SelectedCells[col.Index].Value.ToString()}' and ";
             tempString2 += $"{dgvs[1].Columns[0].Name}='{dgvs[1].Rows[index].Cells[0].Value.ToString()}' ";
             upQuery += $"{tempString2}";
+            sCmd.CommandText = upQuery;
+            sCmd.ExecuteNonQuery();
             if (index < dgvs[1].RowCount - 1)
-                GenerateUpdateQuery(dgvs, table_name, ++index);
-            return upQuery;
+                GenerateUpdateQuery(dgvs, table_name, sCmd, ++index);
+            return;
         }
-        private static string GenerateInsertQuery(DataGridView[] dgvs, string table_name, int index=0, double setWeight=0)
+        private static void GenerateInsertQuery(DataGridView[] dgvs, string table_name, SqlCommand sCmd, int index=0, double setWeight=0)
         {
             string inQuery = $"insert into {table_name} (";
             string tempString1 = "";
@@ -88,9 +86,9 @@ namespace SWeight
             foreach (DataGridViewColumn col in dgvs[1].Columns)
                 tempString1 += $"{col.Name},";
 
-            //patch for avoid errors during insert new rows to table_SRM. DB doesn't allow to write null to field table_SRM.SRM_Set_Weight.The value known from initial form, so before insert we should read it in table_SRM_Set. (the same behaviour for table_Monitor)
+            //todo: patch for avoid errors during insert new rows to table_SRM. DB doesn't allow to write null to field table_SRM.SRM_Set_Weight.The value known from initial form, so before insert we should read it in table_SRM_Set. (the same behaviour for table_Monitor)
             if (!table_name.ToLower().Contains("sample"))
-                tempString1 += $"{table_name}_Weight,".Replace("table_", "");
+                tempString1 += $"{table_name}_Set_Weight,".Replace("NAA_DB_new.dbo.table_", "");
 
             tempString1 = tempString1.Substring(0, tempString1.Length - 1);
             inQuery += $"{tempString1}) values(";
@@ -104,9 +102,12 @@ namespace SWeight
                 tempString2 += $"{setWeight}";
             tempString2 = tempString2.Substring(0, tempString2.Length - 1);
             inQuery += $"{tempString2})";
+            Debug.WriteLine(inQuery);
+            sCmd.CommandText = inQuery;
+            sCmd.ExecuteNonQuery();
             if (index < dgvs[1].RowCount-1)
-                GenerateInsertQuery(dgvs, table_name, ++index, setWeight);
-            return inQuery;
+                GenerateInsertQuery(dgvs, table_name, sCmd, ++index, setWeight);
+            return;
         }
 
         private static string GenerateCountQuery(DataGridView[] dgvs, string table_name, int index=0)
@@ -132,6 +133,13 @@ namespace SWeight
             wQuery += $"{tempString}";
             Debug.WriteLine(wQuery);
             return wQuery;
+        }
+
+       
+        private static double CheckValue(string val)
+        {
+         
+            return 0.0;
         }
     }
 }

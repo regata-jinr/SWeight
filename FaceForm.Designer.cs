@@ -176,6 +176,7 @@
             this.dataGridView_Samples.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Samples.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Samples.TabIndex = 0;
+            this.dataGridView_Samples.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Samples_DataError);
             // 
             // groupBoxSamplesSets
             // 
@@ -250,6 +251,8 @@
             this.dataGridView_Standarts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Standarts.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Standarts.TabIndex = 1;
+            this.dataGridView_Standarts.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Standarts_DataError);
+
             // 
             // groupBoxStandartsSets
             // 
@@ -323,6 +326,8 @@
             this.dataGridView_Monitors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Monitors.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Monitors.TabIndex = 1;
+            this.dataGridView_Monitors.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Monitors_DataError);
+
             // 
             // groupBoxMonitorsSets
             // 
