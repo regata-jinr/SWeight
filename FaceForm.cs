@@ -224,12 +224,21 @@ namespace SWeight
             int num = 0;
             string add2Num = "";
 
-            if (tabDgvs[current.Name][0].ColumnCount < 5)
+            if (current.Name.Equals("tabStandarts"))
             {
                 fileName += "s-s-s-";
                 header[0] += "s";
                 header[1] += "s";
                 header[2] += "s";
+                num = 3;
+                add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[0].Value.ToString();
+            }
+            else if ((current.Name.Equals("tabMonitors")))
+            {
+                fileName += "m-m-m-";
+                header[0] += "m";
+                header[1] += "m";
+                header[2] += "m";
                 num = 3;
                 add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[0].Value.ToString();
             }

@@ -67,9 +67,10 @@ namespace SWeight
             for (int row = 0; row < dgv.RowCount; ++row)
             {
                 string lines = (row+1).ToString("D2");
-                for (int col = 0; col < dgv.ColumnCount; ++col)
+                //we save only first three columns, so instead dgv.ColumnCount we will use just 3
+                for (int col = 0; col < 3; ++col)
                 {
-                    if (col == 1 && dgv.ColumnCount == 4) continue;
+                    //if (col == 1 && dgv.ColumnCount == 4) continue;
                     if (col == 0)
                         delim += AddToNum;
                     val = dgv.Rows[row].Cells[col].Value.ToString();
