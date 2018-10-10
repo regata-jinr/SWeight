@@ -28,10 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.checkBoxBothTypes = new System.Windows.Forms.CheckBox();
-            this.checkBoxSLI = new System.Windows.Forms.CheckBox();
-            this.checkBoxLLI = new System.Windows.Forms.CheckBox();
             this.groupBoxType = new System.Windows.Forms.GroupBox();
+            this.checkedListBoxTypes = new System.Windows.Forms.CheckedListBox();
             this.tabs = new System.Windows.Forms.TabControl();
             this.tabSamples = new System.Windows.Forms.TabPage();
             this.groupBoxSamples = new System.Windows.Forms.GroupBox();
@@ -74,46 +72,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_MonitorsSet)).BeginInit();
             this.SuspendLayout();
             // 
-            // checkBoxBothTypes
-            // 
-            this.checkBoxBothTypes.AutoSize = true;
-            this.checkBoxBothTypes.Checked = true;
-            this.checkBoxBothTypes.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxBothTypes.Location = new System.Drawing.Point(8, 23);
-            this.checkBoxBothTypes.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxBothTypes.Name = "checkBoxBothTypes";
-            this.checkBoxBothTypes.Size = new System.Drawing.Size(104, 20);
-            this.checkBoxBothTypes.TabIndex = 0;
-            this.checkBoxBothTypes.Text = "КЖИ и ДЖИ";
-            this.checkBoxBothTypes.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxSLI
-            // 
-            this.checkBoxSLI.AutoSize = true;
-            this.checkBoxSLI.Location = new System.Drawing.Point(8, 52);
-            this.checkBoxSLI.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxSLI.Name = "checkBoxSLI";
-            this.checkBoxSLI.Size = new System.Drawing.Size(58, 20);
-            this.checkBoxSLI.TabIndex = 1;
-            this.checkBoxSLI.Text = "КЖИ";
-            this.checkBoxSLI.UseVisualStyleBackColor = true;
-            // 
-            // checkBoxLLI
-            // 
-            this.checkBoxLLI.AutoSize = true;
-            this.checkBoxLLI.Location = new System.Drawing.Point(8, 80);
-            this.checkBoxLLI.Margin = new System.Windows.Forms.Padding(4);
-            this.checkBoxLLI.Name = "checkBoxLLI";
-            this.checkBoxLLI.Size = new System.Drawing.Size(59, 20);
-            this.checkBoxLLI.TabIndex = 2;
-            this.checkBoxLLI.Text = "ДЖИ";
-            this.checkBoxLLI.UseVisualStyleBackColor = true;
-            // 
             // groupBoxType
             // 
-            this.groupBoxType.Controls.Add(this.checkBoxBothTypes);
-            this.groupBoxType.Controls.Add(this.checkBoxLLI);
-            this.groupBoxType.Controls.Add(this.checkBoxSLI);
+            this.groupBoxType.Controls.Add(this.checkedListBoxTypes);
             this.groupBoxType.Location = new System.Drawing.Point(963, 42);
             this.groupBoxType.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxType.Name = "groupBoxType";
@@ -122,6 +83,20 @@
             this.groupBoxType.TabIndex = 3;
             this.groupBoxType.TabStop = false;
             this.groupBoxType.Text = "Тип";
+            // 
+            // checkedListBoxTypes
+            // 
+            this.checkedListBoxTypes.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.checkedListBoxTypes.FormattingEnabled = true;
+            this.checkedListBoxTypes.Items.AddRange(new object[] {
+            "КЖИ и ДЖИ",
+            "КЖИ",
+            "ДЖИ"});
+            this.checkedListBoxTypes.Location = new System.Drawing.Point(14, 22);
+            this.checkedListBoxTypes.Name = "checkedListBoxTypes";
+            this.checkedListBoxTypes.Size = new System.Drawing.Size(120, 89);
+            this.checkedListBoxTypes.TabIndex = 10;
+            this.checkedListBoxTypes.ItemCheck += checkedListBoxTypes_ItemCheck;
             // 
             // tabs
             // 
@@ -177,6 +152,8 @@
             this.dataGridView_Samples.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Samples.TabIndex = 0;
             this.dataGridView_Samples.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Samples_DataError);
+            this.dataGridView_Samples.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Samples_CellClick);
+
             // 
             // groupBoxSamplesSets
             // 
@@ -252,6 +229,7 @@
             this.dataGridView_Standarts.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Standarts.TabIndex = 1;
             this.dataGridView_Standarts.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Standarts_DataError);
+            this.dataGridView_Standarts.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Standarts_CellClick);
 
             // 
             // groupBoxStandartsSets
@@ -327,6 +305,7 @@
             this.dataGridView_Monitors.Size = new System.Drawing.Size(896, 308);
             this.dataGridView_Monitors.TabIndex = 1;
             this.dataGridView_Monitors.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Monitors_DataError);
+            this.dataGridView_Monitors.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Monitors_CellClick);
 
             // 
             // groupBoxMonitorsSets
@@ -416,6 +395,7 @@
             this.buttonReadWeight.TabIndex = 9;
             this.buttonReadWeight.Text = "Взвесить";
             this.buttonReadWeight.UseVisualStyleBackColor = true;
+            this.buttonReadWeight.Click += new System.EventHandler(this.buttonReadWeight_Click);
             // 
             // openFileDialog_ReadFromFile
             // 
@@ -432,7 +412,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1112, 761);
+            this.ClientSize = new System.Drawing.Size(1113, 761);
             this.Controls.Add(this.buttonReadWeight);
             this.Controls.Add(this.buttonSave2DB);
             this.Controls.Add(this.buttonAddRow);
@@ -447,7 +427,6 @@
             this.Text = "Взвешивание образцов";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
             this.groupBoxType.ResumeLayout(false);
-            this.groupBoxType.PerformLayout();
             this.tabs.ResumeLayout(false);
             this.tabSamples.ResumeLayout(false);
             this.groupBoxSamples.ResumeLayout(false);
@@ -469,10 +448,6 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.CheckBox checkBoxBothTypes;
-        private System.Windows.Forms.CheckBox checkBoxSLI;
-        private System.Windows.Forms.CheckBox checkBoxLLI;
         private System.Windows.Forms.GroupBox groupBoxType;
         private System.Windows.Forms.TabControl tabs;
         private System.Windows.Forms.TabPage tabSamples;
@@ -497,6 +472,7 @@
         private System.Windows.Forms.DataGridView dataGridView_Monitors;
         private System.Windows.Forms.OpenFileDialog openFileDialog_ReadFromFile;
         private System.Windows.Forms.SaveFileDialog saveFileDialog_Save2File;
+        private System.Windows.Forms.CheckedListBox checkedListBoxTypes;
     }
 }
 

@@ -13,6 +13,7 @@ namespace SWeight
 {
     class DataGridViewWorker
     {
+        //todo: add op. to update and to insert for one table
         public static void DataGridSqlFilling(DataGridView dgv, string select, SqlConnection con)
         {
             if (con.State == ConnectionState.Closed)
@@ -44,7 +45,6 @@ namespace SWeight
                 if (!table_name.ToLower().Contains("sample"))
                     sCmd.CommandText = GenerateSetWeightQuery(dgvs, table_name);
                 setWeight = Convert.ToDouble(sCmd.ExecuteScalar());
-                //todo: add set_weight to insert values
                 if (cnt == 1) { GenerateUpdateQuery(dgvs, table_name, sCmd); }
                 else if (cnt == 0) {GenerateInsertQuery(dgvs, table_name, sCmd, 0,setWeight); }
                 else
@@ -88,7 +88,7 @@ namespace SWeight
 
             //todo: patch for avoid errors during insert new rows to table_SRM. DB doesn't allow to write null to field table_SRM.SRM_Set_Weight.The value known from initial form, so before insert we should read it in table_SRM_Set. (the same behaviour for table_Monitor)
             if (!table_name.ToLower().Contains("sample"))
-                tempString1 += $"{table_name}_Set_Weight,".Replace("NAA_DB_new.dbo.table_", "");
+                tempString1 += $"{table_name}_Set_Weight,".Replace("table_", "");
 
             tempString1 = tempString1.Substring(0, tempString1.Length - 1);
             inQuery += $"{tempString1}) values(";
@@ -125,7 +125,7 @@ namespace SWeight
         private static string GenerateSetWeightQuery(DataGridView[] dgvs, string table_name, int index = 0)
         {
             string tempString = "";
-            string wQuery = $"select {table_name.Replace("NAA_DB_new.dbo.table_", "")}_Set_Weight from {table_name}_Set where ";
+            string wQuery = $"select {table_name.Replace("table_", "")}_Set_Weight from {table_name}_Set where ";
             foreach (DataGridViewColumn col in dgvs[0].Columns)
                 tempString += $"{col.Name}='{dgvs[0].SelectedCells[col.Index].Value.ToString()}' and ";
             tempString = tempString.Substring(0, tempString.Length - 4);
@@ -133,13 +133,6 @@ namespace SWeight
             wQuery += $"{tempString}";
             Debug.WriteLine(wQuery);
             return wQuery;
-        }
-
-       
-        private static double CheckValue(string val)
-        {
-         
-            return 0.0;
         }
     }
 }
