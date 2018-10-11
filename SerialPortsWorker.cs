@@ -21,7 +21,9 @@ namespace SWeight
         {
             try
             {
+                Debug.WriteLine($"Trying to connect to scales:");
                 string com = FindScales();
+                Debug.WriteLine($"The port number is '{com}'");
                 if (com.Equals(""))
                 {
                     MessageBox.Show("The scales are not found! Please Check the list of available devices.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -47,17 +49,14 @@ namespace SWeight
             Debug.WriteLine($"Reading weight is {weight}");
             port.Close();
             return;
-
         }
 
         public double GetWeight() {return weight;}
 
         private string FindScales()
         {
-            Debug.WriteLine("Port info:");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity where DeviceID  like '%DN02GDZ6A%' ");
             ManagementObject scales = searcher.Get().OfType<ManagementObject>().FirstOrDefault();
-            Debug.WriteLine($"Name of weight - {scales["Name"]}");
             if (scales == null) return "";
             return Regex.Match(scales["Name"].ToString(), @"\(([^)]*)\)").Groups[1].Value;
         }
