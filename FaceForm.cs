@@ -58,9 +58,8 @@ namespace SWeight
             InitializeComponent();
             tabs.Selecting += new TabControlCancelEventHandler(tabs_Selecting);
             this.KeyPreview = true;
-            this.KeyDown += new KeyEventHandler(FaceForm_KeyDown);
             InitialsSettings();
-            DataGridViewWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"], con);
         }
 
         private SqlConnection Connect2DB()
@@ -82,7 +81,7 @@ namespace SWeight
         void tabs_Selecting(object sender, TabControlCancelEventArgs e)
         {
             TabPage current = (sender as TabControl).SelectedTab;
-            DataGridViewWorker.DataGridSqlFilling(tabDgvs[current.Name][0], tabSelects[current.Name], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs[current.Name][0], tabSelects[current.Name], con);
             if (current.Name == "tabSamples")
                 buttonAddRow.Enabled = false;
             else
@@ -95,7 +94,7 @@ namespace SWeight
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_SamplesSet.Rows[index];
             string select = $"select A_Sample_ID, P_Weighting_SLI, P_Weighting_LLI, A_Client_Sample_ID from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
-            DataGridViewWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
             if (dataGridView_Samples.RowCount == 0) return;
             dataGridView_Samples.CurrentCell = dataGridView_Samples[0, 0];
             dataGridView_Samples.Columns[0].HeaderText = "номер образца";
@@ -113,7 +112,7 @@ namespace SWeight
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_StandartsSet.Rows[index];
             string select = $"select SRM_Number, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
-            DataGridViewWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
             if (dataGridView_Standarts.RowCount == 0) return;
             dataGridView_Standarts.CurrentCell = dataGridView_Standarts[0, 0];
             dataGridView_Standarts.Columns[0].HeaderText = "номер стандарта";
@@ -129,7 +128,7 @@ namespace SWeight
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_MonitorsSet.Rows[index];
             string select = $"select Monitor_Number, Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
-            DataGridViewWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
             if (dataGridView_Monitors.RowCount == 0) return;
             dataGridView_Monitors.CurrentCell = dataGridView_Monitors[0, 0];
             dataGridView_Monitors.Columns[0].HeaderText = "номер монитора";
@@ -280,7 +279,7 @@ namespace SWeight
         private void buttonSave2DB_Click(object sender, EventArgs e)
         {
             TabPage current = tabs.SelectedTab;
-            DataGridViewWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name], con);
+            DataGridViewSQLWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name], con);
             // return;
         }
 
@@ -367,9 +366,7 @@ namespace SWeight
         private void FaceForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Space)
-            {
                 buttonReadWeight.PerformClick();
-            }
         }
 
     }
