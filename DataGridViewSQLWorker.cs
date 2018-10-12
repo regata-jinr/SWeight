@@ -15,7 +15,31 @@ namespace SWeight
 {
     class DataGridViewSQLWorker
     {
-        //todo: add op. to update and to insert for one table
+        private static Dictionary<string, string> colHeaders = new Dictionary<string, string>();
+
+        static DataGridViewSQLWorker()
+        {
+            colHeaders.Add("F_Country_Code", "Код страны");
+            colHeaders.Add("F_Client_ID", "Клиентский номер");
+            colHeaders.Add("F_Year", "Год");
+            colHeaders.Add("F_Sample_Set_ID", "Номер партии");
+            colHeaders.Add("F_Sample_Set_Index", "Индекс партии");
+            colHeaders.Add("SRM_Set_Name", "Имя партии стандартов");
+            colHeaders.Add("SRM_Set_Number", "Номер партии стандартов");
+            colHeaders.Add("Monitor_Set_Name", "Имя партии мониторов");
+            colHeaders.Add("Monitor_Set_Number", "Номер партии мониторов");
+            colHeaders.Add("A_Sample_ID", "Номер образца");
+            colHeaders.Add("P_Weighting_SLI", "вес, г (КЖИ)");
+            colHeaders.Add("P_Weighting_LLI", "вес, г (ДЖИ)");
+            colHeaders.Add("A_Client_Sample_ID", "Клиентский номер образца");
+            colHeaders.Add("SRM_Number", "Номер стандарта");
+            colHeaders.Add("SRM_SLI_Weight", "вес, г (КЖИ)");
+            colHeaders.Add("SRM_LLI_Weight", "вес, г (ДЖИ)");
+            colHeaders.Add("Monitor_Number", "Номер монитора");
+            colHeaders.Add("Monitor_SLI_Weight", "вес, г (КЖИ)");
+            colHeaders.Add("Monitor_LLI_Weight", "вес, г (ДЖИ)");
+        }
+
         public static void DataGridSqlFilling(DataGridView dgv, string select, SqlConnection con)
         {
             Debug.WriteLine($"Start filling of {dgv.Name}:");
@@ -30,6 +54,15 @@ namespace SWeight
             con.Close();
             if (dgv.RowCount == 0) return;
             dgv.CurrentCell = dgv[0, dgv.RowCount - 1];
+            if (!dgv.Name.Contains("Set"))
+            {
+                dgv.Columns[0].ReadOnly = true;
+                dgv.Columns[1].ValueType = typeof(double);
+                dgv.Columns[2].ValueType = typeof(double);
+                dgv.CurrentCell = dgv[0, 0];
+            }
+            foreach (DataGridViewColumn col in dgv.Columns)
+                col.HeaderText = colHeaders[col.Name];
         }
 
         public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name, SqlConnection con)

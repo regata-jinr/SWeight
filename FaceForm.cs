@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 
-
 //TODO: add try catch;
 //ToDo: add unit tests - https://docs.microsoft.com/en-us/visualstudio/test/getting-started-with-unit-testing?view=vs-2017;
 //ToDo: analyze performance of code - https://docs.microsoft.com/en-us/visualstudio/profiling/beginners-guide-to-performance-profiling?view=vs-2017;
@@ -49,8 +48,8 @@ namespace SWeight
             tabTables.Add("tabMonitors", "table_Monitor");
             checkedListBoxTypes.SetItemChecked(0, true);
             checkedListBoxTypes.SetSelected(1, true);
-
-
+            string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            Text += version.Substring(0, version.Length - 2);
         }
 
         public FaceForm()
@@ -96,14 +95,6 @@ namespace SWeight
             string select = $"select A_Sample_ID, P_Weighting_SLI, P_Weighting_LLI, A_Client_Sample_ID from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
             if (dataGridView_Samples.RowCount == 0) return;
-            dataGridView_Samples.CurrentCell = dataGridView_Samples[0, 0];
-            dataGridView_Samples.Columns[0].HeaderText = "номер образца";
-            dataGridView_Samples.Columns[1].ValueType = typeof(double);
-            dataGridView_Samples.Columns[1].HeaderText = "вес, г (КЖИ)";
-            dataGridView_Samples.Columns[2].HeaderText = "вес, г(ДЖИ)";
-            dataGridView_Samples.Columns[2].ValueType = typeof(double);
-            dataGridView_Samples.Columns[3].HeaderText = "клиентский номер образца";
-            dataGridView_Samples.Columns[0].ReadOnly = true;
             dataGridView_Samples.Columns[3].ReadOnly = true;
         }
 
@@ -114,13 +105,6 @@ namespace SWeight
             string select = $"select SRM_Number, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
             if (dataGridView_Standarts.RowCount == 0) return;
-            dataGridView_Standarts.CurrentCell = dataGridView_Standarts[0, 0];
-            dataGridView_Standarts.Columns[0].HeaderText = "номер стандарта";
-            dataGridView_Standarts.Columns[1].HeaderText = "вес, г (КЖИ)";
-            dataGridView_Standarts.Columns[1].ValueType = typeof(double);
-            dataGridView_Standarts.Columns[2].HeaderText = "вес, г(ДЖИ)";
-            dataGridView_Standarts.Columns[2].ValueType = typeof(double);
-            dataGridView_Standarts.Columns[0].ReadOnly = true;
         }
 
         private void dataGridView_MonitorsSet_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -130,13 +114,6 @@ namespace SWeight
             string select = $"select Monitor_Number, Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
             if (dataGridView_Monitors.RowCount == 0) return;
-            dataGridView_Monitors.CurrentCell = dataGridView_Monitors[0, 0];
-            dataGridView_Monitors.Columns[0].HeaderText = "номер монитора";
-            dataGridView_Monitors.Columns[1].HeaderText = "вес, г (КЖИ)";
-            dataGridView_Monitors.Columns[1].ValueType = typeof(double);
-            dataGridView_Monitors.Columns[2].HeaderText = "вес, г(ДЖИ)";
-            dataGridView_Monitors.Columns[2].ValueType = typeof(double);
-            dataGridView_Monitors.Columns[0].ReadOnly = true;
         }
 
         //todo: complete this action not clear what behaviour should be. consult with users.

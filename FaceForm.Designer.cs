@@ -424,7 +424,7 @@
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "FaceForm";
             this.ShowIcon = false;
-            this.Text = "Взвешивание образцов";
+            this.Text = "Взвешивание образцов    ";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
             this.groupBoxType.ResumeLayout(false);
             this.tabs.ResumeLayout(false);
