@@ -5,11 +5,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Configuration;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Text;
-//using System.Threading.Tasks;
+using System.Drawing;
 
 namespace SWeight
 {
@@ -20,7 +16,7 @@ namespace SWeight
         static DataGridViewSQLWorker()
         {
             colHeaders.Add("F_Country_Code", "Код страны");
-            colHeaders.Add("F_Client_ID", "Клиентский номер");
+            colHeaders.Add("F_Client_ID", "Код клиента");
             colHeaders.Add("F_Year", "Год");
             colHeaders.Add("F_Sample_Set_ID", "Номер партии");
             colHeaders.Add("F_Sample_Set_Index", "Индекс партии");
@@ -34,6 +30,7 @@ namespace SWeight
             colHeaders.Add("A_Client_Sample_ID", "Клиентский номер образца");
             colHeaders.Add("SRM_Number", "Номер стандарта");
             colHeaders.Add("SRM_SLI_Weight", "вес, г (КЖИ)");
+            colHeaders.Add("skip", "empty");
             colHeaders.Add("SRM_LLI_Weight", "вес, г (ДЖИ)");
             colHeaders.Add("Monitor_Number", "Номер монитора");
             colHeaders.Add("Monitor_SLI_Weight", "вес, г (КЖИ)");
@@ -57,12 +54,25 @@ namespace SWeight
             if (!dgv.Name.Contains("Set"))
             {
                 dgv.Columns[0].ReadOnly = true;
-                dgv.Columns[1].ValueType = typeof(double);
-                dgv.Columns[2].ValueType = typeof(double);
-                dgv.CurrentCell = dgv[0, 0];
+                if (dgv.Name != "dataGridView_Samples") dgv.Columns[1].Visible = false;
+                else dgv.Columns[3].ValueType = typeof(double);
             }
+            var isFirst = true;
             foreach (DataGridViewColumn col in dgv.Columns)
+            {
                 col.HeaderText = colHeaders[col.Name];
+                if (col.HeaderText.Contains("вес"))
+                    foreach (DataGridViewRow row in dgv.Rows)
+                    {
+                        dgv.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.PaleTurquoise;
+                        if (string.IsNullOrEmpty(dgv.Rows[row.Index].Cells[col.Index].Value.ToString()) && isFirst)
+                        {
+                            dgv.CurrentCell = dgv.Rows[row.Index].Cells[col.Index];
+                            isFirst = false;
+                        }
+                    }
+
+            }
         }
 
         public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name, SqlConnection con)
@@ -72,6 +82,8 @@ namespace SWeight
                 Debug.WriteLine($"Starting to save content of {dgvs[1].Name} to DB({table_name}):");
                 int cnt;
                 double setWeight;
+                var temStr = "";
+                var start = 1;
                 Dictionary<string,string> conditionalDict = new Dictionary<string, string>();
                 foreach (DataGridViewColumn col in dgvs[0].Columns)
                     conditionalDict.Add(col.Name, dgvs[0].SelectedCells[col.Index].Value.ToString());
@@ -83,8 +95,21 @@ namespace SWeight
                 sCmd.Connection = con;
                 foreach (DataGridViewRow row in dgvs[1].Rows)
                 {
-                    conditionalDict.Add(dgvs[1].Columns[0].Name, dgvs[1].Rows[row.Index].Cells[0].Value.ToString());
-                    for (int i = 1; i < 3; ++i) valuesDict.Add(dgvs[1].Columns[i].Name, dgvs[1].Rows[row.Index].Cells[i].Value.ToString());
+                    start = 1;
+                    temStr = dgvs[1].Rows[row.Index].Cells[0].Value.ToString();
+                    // patch for fucking A_Client_Sample_ID should be on the second place in the table
+                    if (dgvs[1].Name.Contains("Samples"))
+                    {
+                        temStr = temStr.Substring(1, temStr.Length-1);
+                        start = 2;
+                    }
+                    conditionalDict.Add(dgvs[1].Columns[0].Name, temStr);
+                    for (int i = 1; i < dgvs[1].ColumnCount; ++i)
+                    {
+                        if (dgvs[1].Columns[i].Name == "skip" || dgvs[1].Columns[i].Name == "A_Client_Sample_ID") continue;
+                        valuesDict.Add(dgvs[1].Columns[i].Name, dgvs[1].Rows[row.Index].Cells[i].Value.ToString());
+
+                    }
                     sCmd.CommandText = GenerateCountQuery(conditionalDict, table_name);
                     cnt = (int)sCmd.ExecuteScalar();
                     Debug.WriteLine($"Number of elements(samples,srms,monitors) in {table_name} from selected set is {cnt}");
@@ -100,6 +125,7 @@ namespace SWeight
                         MessageBox.Show($"The query might be ambiguous. Check the sql-statements.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
+                    //for debug comment this
                     sCmd.ExecuteNonQuery();
                     conditionalDict.Remove(dgvs[1].Columns[0].Name);
                     valuesDict.Clear();
