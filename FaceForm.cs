@@ -9,6 +9,8 @@ using System.IO;
 using System.Collections;
 
 //TODO: add try catch;
+//TODO: add mechnism of weighting for selected cell
+//TODO: hit the space should be event for weighting independent from button focus
 //ToDo: add unit tests - https://docs.microsoft.com/en-us/visualstudio/test/getting-started-with-unit-testing?view=vs-2017;
 //ToDo: analyze performance of code - https://docs.microsoft.com/en-us/visualstudio/profiling/beginners-guide-to-performance-profiling?view=vs-2017;
 
@@ -21,6 +23,7 @@ namespace SWeight
         private Dictionary<string, string> tabTables = new Dictionary<string, string>();
         private Dictionary<string, DataGridView[]> tabDgvs = new Dictionary<string, DataGridView[]>();
         private SqlConnection con = new SqlConnection();
+        private int currRowIndex = 0, currColIndex = 0;
 
         private void InitialsSettings()
         {
@@ -47,7 +50,6 @@ namespace SWeight
             tabTables.Add("tabStandarts", "table_SRM");
             tabTables.Add("tabMonitors", "table_Monitor");
             checkedListBoxTypes.SetItemChecked(0, true);
-            checkedListBoxTypes.SetSelected(1, true);
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Text += version.Substring(0, version.Length - 2);
         }
@@ -56,7 +58,7 @@ namespace SWeight
         {
             InitializeComponent();
             tabs.Selecting += new TabControlCancelEventHandler(tabs_Selecting);
-            this.KeyPreview = true;
+            KeyPreview = true;
             InitialsSettings();
             DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"], con);
         }
@@ -96,7 +98,7 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
             if (dataGridView_Samples.RowCount == 0) return;
             dataGridView_Samples.Columns[1].ReadOnly = true;
-            buttonReadWeight.Focus();
+            dataGridView_Samples.Focus();
         }
 
         private void dataGridView_StandartsSet_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -106,7 +108,7 @@ namespace SWeight
             string select = $"select SRM_Number,1 as skip, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
             if (dataGridView_Standarts.RowCount == 0) return;
-            buttonReadWeight.Focus();
+            dataGridView_Standarts.Focus();
         }
 
         private void dataGridView_MonitorsSet_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -116,7 +118,7 @@ namespace SWeight
             string select = $"select Monitor_Number,1 as skip,Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
             if (dataGridView_Monitors.RowCount == 0) return;
-            buttonReadWeight.Focus();
+            dataGridView_Monitors.Focus();
         }
 
         //todo: complete this action not clear what behaviour should be. consult with users.
@@ -278,8 +280,6 @@ namespace SWeight
             MessageBox.Show("The most probably you are trying to use no-number format in weight columns. We can't allow to do it, because in the other case it will allow to use sql-injection. Please use only number formats (01,10,1,10.23,...)", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private int clickCount = 0;
-
         private void buttonReadWeight_Click(object sender, EventArgs e)
         {
             TabPage current = tabs.SelectedTab;
@@ -290,31 +290,31 @@ namespace SWeight
             }
             SerialPortsWorker worker = new SerialPortsWorker();
            
-            int curRowNum = tabDgvs[current.Name][1].SelectedCells[0].RowIndex;
-            checkedListBoxTypes.ClearSelected();
+            currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
+            currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
+            tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
+
             Debug.WriteLine(checkedListBoxTypes.GetItemChecked(0).ToString());
+
             if (checkedListBoxTypes.GetItemChecked(0))
             {
-                if (clickCount % 2 == 0)
+                if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
                 {
-                    tabDgvs[current.Name][1].Rows[curRowNum].Cells[1].Value = worker.GetWeight();
-                    curRowNum--;
-                    checkedListBoxTypes.SetSelected(2, true);
+                    if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
+                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1];
+                    tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1].Selected = true;
                 }
-                else
+                else if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("КЖИ"))
                 {
-                    tabDgvs[current.Name][1].Rows[curRowNum].Cells[2].Value = worker.GetWeight();
-                    checkedListBoxTypes.SetSelected(1, true);
+                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1];
+                    tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1].Selected = true;
                 }
             }
-            else if (checkedListBoxTypes.GetItemChecked(1))
-                tabDgvs[current.Name][1].Rows[curRowNum].Cells[1].Value = worker.GetWeight();
-            else if (checkedListBoxTypes.GetItemChecked(2))
-                tabDgvs[current.Name][1].Rows[curRowNum].Cells[2].Value = worker.GetWeight();
-            if ((curRowNum + 1) == tabDgvs[current.Name][1].RowCount) return;
-            tabDgvs[current.Name][1].ClearSelection();
-            tabDgvs[current.Name][1].Rows[++curRowNum].Cells[0].Selected = true;
-            clickCount++;
+            else
+            {
+                if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
+                tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
+            }
         }
 
         private void checkedListBoxTypes_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -324,30 +324,14 @@ namespace SWeight
                 for (int ix = 0; ix < checkedListBoxTypes.Items.Count; ++ix)
                     if (ix != e.Index) checkedListBoxTypes.SetItemChecked(ix, false);
             }
-            clickCount = 0;
-            if (!checkedListBoxTypes.GetItemChecked(0) && checkedListBoxTypes.GetSelected(0))
-                checkedListBoxTypes.SetSelected(1, true);
-
+            TabPage current = tabs.SelectedTab;
+            tabDgvs[current.Name][1].Focus();
         }
 
-        private void dataGridView_Samples_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)
         {
-            clickCount = 0;
-        }
-        private void dataGridView_Standarts_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            clickCount = 0;
-        }
-        private void dataGridView_Monitors_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            clickCount = 0;
-        }
-
-        private void FaceForm_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Space)
+            if (e.KeyChar == (char)Keys.Space)
                 buttonReadWeight.PerformClick();
         }
-
     }
 }

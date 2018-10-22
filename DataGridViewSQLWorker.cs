@@ -65,7 +65,7 @@ namespace SWeight
                     foreach (DataGridViewRow row in dgv.Rows)
                     {
                         dgv.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.PaleTurquoise;
-                        if (string.IsNullOrEmpty(dgv.Rows[row.Index].Cells[col.Index].Value.ToString()) && isFirst)
+                        if ((string.IsNullOrEmpty(dgv.Rows[row.Index].Cells[col.Index].Value.ToString()) || dgv.Rows[row.Index].Cells[col.Index].Value.ToString() == "0") && isFirst)
                         {
                             dgv.CurrentCell = dgv.Rows[row.Index].Cells[col.Index];
                             isFirst = false;

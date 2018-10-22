@@ -97,6 +97,7 @@
             this.checkedListBoxTypes.Name = "checkedListBoxTypes";
             this.checkedListBoxTypes.Size = new System.Drawing.Size(140, 89);
             this.checkedListBoxTypes.TabIndex = 10;
+            this.checkedListBoxTypes.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBoxTypes_ItemCheck);
             // 
             // tabs
             // 
@@ -160,7 +161,6 @@
             this.dataGridView_Samples.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Samples.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Samples.TabIndex = 0;
-            this.dataGridView_Samples.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Samples_CellClick);
             this.dataGridView_Samples.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Samples_DataError);
             // 
             // groupBoxSamplesSets
@@ -247,7 +247,6 @@
             this.dataGridView_Standarts.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Standarts.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Standarts.TabIndex = 1;
-            this.dataGridView_Standarts.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Standarts_CellClick);
             this.dataGridView_Standarts.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Standarts_DataError);
             // 
             // groupBoxStandartsSets
@@ -333,7 +332,6 @@
             this.dataGridView_Monitors.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
             this.dataGridView_Monitors.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Monitors.TabIndex = 1;
-            this.dataGridView_Monitors.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView_Monitors_CellClick);
             this.dataGridView_Monitors.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Monitors_DataError);
             // 
             // groupBoxMonitorsSets
@@ -466,6 +464,7 @@
             this.ShowIcon = false;
             this.Text = "Взвешивание образцов    ";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
+            this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FaceForm_KeyPress);
             this.groupBoxType.ResumeLayout(false);
             this.tabs.ResumeLayout(false);
             this.tabSamples.ResumeLayout(false);
