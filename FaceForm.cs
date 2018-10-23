@@ -28,7 +28,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             con = Connect2DB();
-            tabSelects.Add("tabSamples", "select Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index");
+            tabSelects.Add("tabSamples", "select top 50 Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index asc");
             tabSelects.Add("tabStandarts", "select SRM_Set_Name, SRM_Set_Number from table_SRM_Set");
             tabSelects.Add("tabMonitors", "select Monitor_Set_Name, Monitor_Set_Number from table_Monitor_Set");
             DataGridView[] dgvArray1 = new DataGridView[2];
@@ -253,9 +253,19 @@ namespace SWeight
             tabDgvs[current.Name][1].DataSource = dt;
         }
 
+        private bool m_isExiting = false;
         private void FaceForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Application.Exit();
+            if (!m_isExiting)
+            {
+                DialogResult d = MessageBox.Show("Вы уверены, что сохранили все данные и хотите выйти из приложения?", "Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                if (d == DialogResult.Yes)
+                {
+                    m_isExiting = true;
+                    Application.Exit();
+                }
+                else e.Cancel = true;
+            }
         }
 
         private void buttonSave2DB_Click(object sender, EventArgs e)
@@ -283,15 +293,16 @@ namespace SWeight
         private void buttonReadWeight_Click(object sender, EventArgs e)
         {
             TabPage current = tabs.SelectedTab;
+            currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
+            currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
             if (tabDgvs[current.Name][1].DataSource == null)
             {
                 MessageBox.Show("Please choose one of the lines from the top table.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
             SerialPortsWorker worker = new SerialPortsWorker();
-           
-            currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
-            currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
+
             tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
 
             Debug.WriteLine(checkedListBoxTypes.GetItemChecked(0).ToString());
@@ -326,6 +337,59 @@ namespace SWeight
             }
             TabPage current = tabs.SelectedTab;
             tabDgvs[current.Name][1].Focus();
+            CommonSelectionMechanics(tabDgvs[current.Name][1]);
+        }
+
+        private void button_CheckedListBoxTypesClick(object sender, EventArgs e)
+        {
+            if (checkedListBoxTypes.CheckedItems.Count == 0) checkedListBoxTypes.SetItemChecked(0, true);
+        }
+
+        private void CheckedListBoxTypesDobuleClick(object sender, EventArgs e)
+        {
+            button_CheckedListBoxTypesClick(sender, e);
+        }
+
+        private void datagridview_SamplesSelectionChanged(object sender, EventArgs e)
+        {
+            TabPage current = tabs.SelectedTab;
+            CommonSelectionMechanics(tabDgvs[current.Name][1]);
+        }
+
+        private void CommonSelectionMechanics(DataGridView dgv)
+        {
+            if (dgv.CurrentCell == null) return;
+            Debug.WriteLine($"Start selection mech:");
+            currRowIndex = dgv.CurrentCellAddress.Y;
+            currColIndex = dgv.CurrentCellAddress.X;
+            Debug.WriteLine($"Initial position: row-{currRowIndex}, col-{currColIndex}");
+            int sliColIndex = 0, lliColIndex = 0;
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                if (col.HeaderText.Contains("КЖИ")) sliColIndex = col.Index;
+                if (col.HeaderText.Contains("ДЖИ")) lliColIndex = col.Index;
+            }
+            if (checkedListBoxTypes.GetItemChecked(0) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ") && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            {
+                Debug.WriteLine($"See that both types checked and non weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
+            }
+            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(2) && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            {
+                Debug.WriteLine($"See that SLI types checked and non sli-weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
+            }
+            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(1) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ"))
+            {
+                Debug.WriteLine($"See that LLI types checked and non lli-weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{lliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[lliColIndex];
+                dgv.Rows[currRowIndex].Cells[lliColIndex].Selected = true;
+            }
         }
 
         private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)

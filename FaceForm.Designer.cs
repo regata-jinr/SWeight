@@ -88,6 +88,7 @@
             // checkedListBoxTypes
             // 
             this.checkedListBoxTypes.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.checkedListBoxTypes.CheckOnClick = true;
             this.checkedListBoxTypes.FormattingEnabled = true;
             this.checkedListBoxTypes.Items.AddRange(new object[] {
             "КЖИ и ДЖИ",
@@ -98,6 +99,9 @@
             this.checkedListBoxTypes.Size = new System.Drawing.Size(140, 89);
             this.checkedListBoxTypes.TabIndex = 10;
             this.checkedListBoxTypes.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBoxTypes_ItemCheck);
+            this.checkedListBoxTypes.Click += new System.EventHandler(this.button_CheckedListBoxTypesClick);
+            this.checkedListBoxTypes.SelectedValueChanged += new System.EventHandler(this.CheckedListBoxTypesDobuleClick);
+            this.checkedListBoxTypes.DoubleClick += new System.EventHandler(this.CheckedListBoxTypesDobuleClick);
             // 
             // tabs
             // 
@@ -162,6 +166,7 @@
             this.dataGridView_Samples.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Samples.TabIndex = 0;
             this.dataGridView_Samples.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Samples_DataError);
+            this.dataGridView_Samples.SelectionChanged += new System.EventHandler(this.datagridview_SamplesSelectionChanged);
             // 
             // groupBoxSamplesSets
             // 
@@ -248,6 +253,7 @@
             this.dataGridView_Standarts.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Standarts.TabIndex = 1;
             this.dataGridView_Standarts.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Standarts_DataError);
+            this.dataGridView_Standarts.SelectionChanged += new System.EventHandler(this.datagridview_SamplesSelectionChanged);
             // 
             // groupBoxStandartsSets
             // 
@@ -333,6 +339,7 @@
             this.dataGridView_Monitors.Size = new System.Drawing.Size(930, 282);
             this.dataGridView_Monitors.TabIndex = 1;
             this.dataGridView_Monitors.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dataGridView_Monitors_DataError);
+            this.dataGridView_Monitors.SelectionChanged += new System.EventHandler(this.datagridview_SamplesSelectionChanged);
             // 
             // groupBoxMonitorsSets
             // 

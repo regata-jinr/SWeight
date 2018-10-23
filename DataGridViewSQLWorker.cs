@@ -58,10 +58,13 @@ namespace SWeight
                 else dgv.Columns[3].ValueType = typeof(double);
             }
             var isFirst = true;
+            var sliIndex = 0;
             foreach (DataGridViewColumn col in dgv.Columns)
             {
                 col.HeaderText = colHeaders[col.Name];
                 if (col.HeaderText.Contains("вес"))
+                {
+                    sliIndex = col.Index;
                     foreach (DataGridViewRow row in dgv.Rows)
                     {
                         dgv.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.PaleTurquoise;
@@ -71,8 +74,9 @@ namespace SWeight
                             isFirst = false;
                         }
                     }
-
+                }
             }
+            if (isFirst && !dgv.Name.Contains("Set")) dgv.CurrentCell = dgv.Rows[dgv.Rows.Count - 1].Cells[sliIndex - 1];
         }
 
         public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name, SqlConnection con)
