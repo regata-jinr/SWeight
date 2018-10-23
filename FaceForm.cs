@@ -28,7 +28,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             con = Connect2DB();
-            tabSelects.Add("tabSamples", "select top 50 Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index asc");
+            tabSelects.Add("tabSamples", "select Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index");
             tabSelects.Add("tabStandarts", "select SRM_Set_Name, SRM_Set_Number from table_SRM_Set");
             tabSelects.Add("tabMonitors", "select Monitor_Set_Name, Monitor_Set_Number from table_Monitor_Set");
             DataGridView[] dgvArray1 = new DataGridView[2];
@@ -52,6 +52,9 @@ namespace SWeight
             checkedListBoxTypes.SetItemChecked(0, true);
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Text += version.Substring(0, version.Length - 2);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"], con);
         }
 
         public FaceForm()
@@ -82,7 +85,7 @@ namespace SWeight
         void tabs_Selecting(object sender, TabControlCancelEventArgs e)
         {
             TabPage current = (sender as TabControl).SelectedTab;
-            DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs[current.Name][0], tabSelects[current.Name], con);
+          //  DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs[current.Name][0], tabSelects[current.Name], con);
             if (current.Name == "tabSamples")
                 buttonAddRow.Enabled = false;
             else
@@ -93,6 +96,9 @@ namespace SWeight
         private void dataGridView_SamplesSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int index = e.RowIndex;// get the Row Index
+            // for sorting
+            if (index < 0) return;
+            
             DataGridViewRow selectedRow = dataGridView_SamplesSet.Rows[index];
             string select = $"select F_Sample_Set_Index+A_Sample_ID as A_Sample_ID,A_Client_Sample_ID as A_Client_Sample_ID, P_Weighting_SLI, P_Weighting_LLI from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
@@ -103,7 +109,10 @@ namespace SWeight
 
         private void dataGridView_StandartsSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+
             int index = e.RowIndex;// get the Row Index
+            // for sorting
+            if (index < 0) return;
             DataGridViewRow selectedRow = dataGridView_StandartsSet.Rows[index];
             string select = $"select SRM_Number,1 as skip, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
@@ -114,6 +123,8 @@ namespace SWeight
         private void dataGridView_MonitorsSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int index = e.RowIndex;// get the Row Index
+            // for sorting
+            if (index < 0) return;
             DataGridViewRow selectedRow = dataGridView_MonitorsSet.Rows[index];
             string select = $"select Monitor_Number,1 as skip,Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
