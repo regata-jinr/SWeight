@@ -13,7 +13,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>ftp://159.93.100.213/Routines/New/SWeight/</PublishUrl>
+    <PublishUrl>\\NF-100-213\NaaSoft\SWeight\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Unc</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -27,7 +27,7 @@
     <SupportUrl>http://regata.jinr.ru/</SupportUrl>
     <ProductName>SWeight</ProductName>
     <PublisherName>regata-jinr</PublisherName>
-    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationRevision>21</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>

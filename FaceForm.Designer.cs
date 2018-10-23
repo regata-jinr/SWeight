@@ -186,7 +186,6 @@
             // 
             this.dataGridView_SamplesSet.AllowUserToAddRows = false;
             this.dataGridView_SamplesSet.AllowUserToDeleteRows = false;
-            this.dataGridView_SamplesSet.AllowUserToOrderColumns = true;
             this.dataGridView_SamplesSet.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -273,7 +272,6 @@
             // 
             this.dataGridView_StandartsSet.AllowUserToAddRows = false;
             this.dataGridView_StandartsSet.AllowUserToDeleteRows = false;
-            this.dataGridView_StandartsSet.AllowUserToOrderColumns = true;
             this.dataGridView_StandartsSet.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -359,7 +357,6 @@
             // 
             this.dataGridView_MonitorsSet.AllowUserToAddRows = false;
             this.dataGridView_MonitorsSet.AllowUserToDeleteRows = false;
-            this.dataGridView_MonitorsSet.AllowUserToOrderColumns = true;
             this.dataGridView_MonitorsSet.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
