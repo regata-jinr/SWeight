@@ -9,6 +9,8 @@ using System.IO;
 using System.Collections;
 
 //TODO: add try catch;
+//TODO: add mechnism of weighting for selected cell
+//TODO: hit the space should be event for weighting independent from button focus
 //ToDo: add unit tests - https://docs.microsoft.com/en-us/visualstudio/test/getting-started-with-unit-testing?view=vs-2017;
 //ToDo: analyze performance of code - https://docs.microsoft.com/en-us/visualstudio/profiling/beginners-guide-to-performance-profiling?view=vs-2017;
 
@@ -21,11 +23,12 @@ namespace SWeight
         private Dictionary<string, string> tabTables = new Dictionary<string, string>();
         private Dictionary<string, DataGridView[]> tabDgvs = new Dictionary<string, DataGridView[]>();
         private SqlConnection con = new SqlConnection();
+        private int currRowIndex = 0, currColIndex = 0;
 
         private void InitialsSettings()
         {
             con = Connect2DB();
-            tabSelects.Add("tabSamples", "select Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index");
+            tabSelects.Add("tabSamples", "select top 50 Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index asc");
             tabSelects.Add("tabStandarts", "select SRM_Set_Name, SRM_Set_Number from table_SRM_Set");
             tabSelects.Add("tabMonitors", "select Monitor_Set_Name, Monitor_Set_Number from table_Monitor_Set");
             DataGridView[] dgvArray1 = new DataGridView[2];
@@ -47,7 +50,6 @@ namespace SWeight
             tabTables.Add("tabStandarts", "table_SRM");
             tabTables.Add("tabMonitors", "table_Monitor");
             checkedListBoxTypes.SetItemChecked(0, true);
-            checkedListBoxTypes.SetSelected(1, true);
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Text += version.Substring(0, version.Length - 2);
         }
@@ -56,7 +58,7 @@ namespace SWeight
         {
             InitializeComponent();
             tabs.Selecting += new TabControlCancelEventHandler(tabs_Selecting);
-            this.KeyPreview = true;
+            KeyPreview = true;
             InitialsSettings();
             DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"], con);
         }
@@ -92,28 +94,31 @@ namespace SWeight
         {
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_SamplesSet.Rows[index];
-            string select = $"select A_Sample_ID, P_Weighting_SLI, P_Weighting_LLI, A_Client_Sample_ID from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
+            string select = $"select F_Sample_Set_Index+A_Sample_ID as A_Sample_ID,A_Client_Sample_ID as A_Client_Sample_ID, P_Weighting_SLI, P_Weighting_LLI from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
             if (dataGridView_Samples.RowCount == 0) return;
-            dataGridView_Samples.Columns[3].ReadOnly = true;
+            dataGridView_Samples.Columns[1].ReadOnly = true;
+            dataGridView_Samples.Focus();
         }
 
         private void dataGridView_StandartsSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_StandartsSet.Rows[index];
-            string select = $"select SRM_Number, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
+            string select = $"select SRM_Number,1 as skip, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
             if (dataGridView_Standarts.RowCount == 0) return;
+            dataGridView_Standarts.Focus();
         }
 
         private void dataGridView_MonitorsSet_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             int index = e.RowIndex;// get the Row Index
             DataGridViewRow selectedRow = dataGridView_MonitorsSet.Rows[index];
-            string select = $"select Monitor_Number, Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
+            string select = $"select Monitor_Number,1 as skip,Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
             if (dataGridView_Monitors.RowCount == 0) return;
+            dataGridView_Monitors.Focus();
         }
 
         //todo: complete this action not clear what behaviour should be. consult with users.
@@ -221,7 +226,7 @@ namespace SWeight
                 num = 3;
                 add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[0].Value.ToString();
             }
-            else add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[4].Value.ToString();
+            //else add2Num = tabDgvs[current.Name][0].SelectedRows[0].Cells[4].Value.ToString();
 
             for (int i = 0; i < tabDgvs[current.Name][0].ColumnCount; ++i)
             {
@@ -248,9 +253,19 @@ namespace SWeight
             tabDgvs[current.Name][1].DataSource = dt;
         }
 
+        private bool m_isExiting = false;
         private void FaceForm_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Application.Exit();
+            if (!m_isExiting)
+            {
+                DialogResult d = MessageBox.Show("Вы уверены, что сохранили все данные и хотите выйти из приложения?", "Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation);
+                if (d == DialogResult.Yes)
+                {
+                    m_isExiting = true;
+                    Application.Exit();
+                }
+                else e.Cancel = true;
+            }
         }
 
         private void buttonSave2DB_Click(object sender, EventArgs e)
@@ -275,43 +290,42 @@ namespace SWeight
             MessageBox.Show("The most probably you are trying to use no-number format in weight columns. We can't allow to do it, because in the other case it will allow to use sql-injection. Please use only number formats (01,10,1,10.23,...)", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private int clickCount = 0;
-
         private void buttonReadWeight_Click(object sender, EventArgs e)
         {
             TabPage current = tabs.SelectedTab;
+            currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
+            currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
             if (tabDgvs[current.Name][1].DataSource == null)
             {
                 MessageBox.Show("Please choose one of the lines from the top table.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
             SerialPortsWorker worker = new SerialPortsWorker();
-           
-            int curRowNum = tabDgvs[current.Name][1].SelectedCells[0].RowIndex;
-            checkedListBoxTypes.ClearSelected();
+
+            tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
+
             Debug.WriteLine(checkedListBoxTypes.GetItemChecked(0).ToString());
+
             if (checkedListBoxTypes.GetItemChecked(0))
             {
-                if (clickCount % 2 == 0)
+                if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
                 {
-                    tabDgvs[current.Name][1].Rows[curRowNum].Cells[1].Value = worker.GetWeight();
-                    curRowNum--;
-                    checkedListBoxTypes.SetSelected(2, true);
+                    if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
+                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1];
+                    tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1].Selected = true;
                 }
-                else
+                else if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("КЖИ"))
                 {
-                    tabDgvs[current.Name][1].Rows[curRowNum].Cells[2].Value = worker.GetWeight();
-                    checkedListBoxTypes.SetSelected(1, true);
+                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1];
+                    tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1].Selected = true;
                 }
             }
-            else if (checkedListBoxTypes.GetItemChecked(1))
-                tabDgvs[current.Name][1].Rows[curRowNum].Cells[1].Value = worker.GetWeight();
-            else if (checkedListBoxTypes.GetItemChecked(2))
-                tabDgvs[current.Name][1].Rows[curRowNum].Cells[2].Value = worker.GetWeight();
-            if ((curRowNum + 1) == tabDgvs[current.Name][1].RowCount) return;
-            tabDgvs[current.Name][1].ClearSelection();
-            tabDgvs[current.Name][1].Rows[++curRowNum].Cells[0].Selected = true;
-            clickCount++;
+            else
+            {
+                if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
+                tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
+            }
         }
 
         private void checkedListBoxTypes_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -321,30 +335,67 @@ namespace SWeight
                 for (int ix = 0; ix < checkedListBoxTypes.Items.Count; ++ix)
                     if (ix != e.Index) checkedListBoxTypes.SetItemChecked(ix, false);
             }
-            clickCount = 0;
-            if (!checkedListBoxTypes.GetItemChecked(0) && checkedListBoxTypes.GetSelected(0))
-                checkedListBoxTypes.SetSelected(1, true);
-
+            TabPage current = tabs.SelectedTab;
+            tabDgvs[current.Name][1].Focus();
+            CommonSelectionMechanics(tabDgvs[current.Name][1]);
         }
 
-        private void dataGridView_Samples_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void button_CheckedListBoxTypesClick(object sender, EventArgs e)
         {
-            clickCount = 0;
-        }
-        private void dataGridView_Standarts_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            clickCount = 0;
-        }
-        private void dataGridView_Monitors_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            clickCount = 0;
+            if (checkedListBoxTypes.CheckedItems.Count == 0) checkedListBoxTypes.SetItemChecked(0, true);
         }
 
-        private void FaceForm_KeyDown(object sender, KeyEventArgs e)
+        private void CheckedListBoxTypesDobuleClick(object sender, EventArgs e)
         {
-            if (e.KeyCode == Keys.Space)
+            button_CheckedListBoxTypesClick(sender, e);
+        }
+
+        private void datagridview_SamplesSelectionChanged(object sender, EventArgs e)
+        {
+            TabPage current = tabs.SelectedTab;
+            CommonSelectionMechanics(tabDgvs[current.Name][1]);
+        }
+
+        private void CommonSelectionMechanics(DataGridView dgv)
+        {
+            if (dgv.CurrentCell == null) return;
+            Debug.WriteLine($"Start selection mech:");
+            currRowIndex = dgv.CurrentCellAddress.Y;
+            currColIndex = dgv.CurrentCellAddress.X;
+            Debug.WriteLine($"Initial position: row-{currRowIndex}, col-{currColIndex}");
+            int sliColIndex = 0, lliColIndex = 0;
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                if (col.HeaderText.Contains("КЖИ")) sliColIndex = col.Index;
+                if (col.HeaderText.Contains("ДЖИ")) lliColIndex = col.Index;
+            }
+            if (checkedListBoxTypes.GetItemChecked(0) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ") && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            {
+                Debug.WriteLine($"See that both types checked and non weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
+            }
+            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(2) && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            {
+                Debug.WriteLine($"See that SLI types checked and non sli-weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
+            }
+            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(1) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ"))
+            {
+                Debug.WriteLine($"See that LLI types checked and non lli-weight cell chosen:");
+                Debug.WriteLine($"Current position: row-{currRowIndex}, col-{lliColIndex}");
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[lliColIndex];
+                dgv.Rows[currRowIndex].Cells[lliColIndex].Selected = true;
+            }
+        }
+
+        private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Space)
                 buttonReadWeight.PerformClick();
         }
-
     }
 }
