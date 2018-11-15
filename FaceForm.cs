@@ -248,9 +248,11 @@ namespace SWeight
             if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
             {
                 CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
-                return;
+                if (checkBoxDB.Checked) buttonSave2DB_Click(sender, e);
+                else return;
             }
             else { return; }
+            
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)

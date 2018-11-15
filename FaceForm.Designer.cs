@@ -53,6 +53,7 @@
             this.buttonReadWeight = new System.Windows.Forms.Button();
             this.openFileDialog_ReadFromFile = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialog_Save2File = new System.Windows.Forms.SaveFileDialog();
+            this.checkBoxDB = new System.Windows.Forms.CheckBox();
             this.groupBoxType.SuspendLayout();
             this.tabs.SuspendLayout();
             this.tabSamples.SuspendLayout();
@@ -396,7 +397,7 @@
             this.buttonSave2File.Name = "buttonSave2File";
             this.buttonSave2File.Size = new System.Drawing.Size(165, 71);
             this.buttonSave2File.TabIndex = 6;
-            this.buttonSave2File.Text = "Сохранить в файл";
+            this.buttonSave2File.Text = "Сохранить данные в файл";
             this.buttonSave2File.UseVisualStyleBackColor = true;
             this.buttonSave2File.Click += new System.EventHandler(this.buttonSave2File_Click);
             // 
@@ -404,7 +405,7 @@
             // 
             this.buttonAddRow.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.buttonAddRow.Enabled = false;
-            this.buttonAddRow.Location = new System.Drawing.Point(972, 291);
+            this.buttonAddRow.Location = new System.Drawing.Point(972, 313);
             this.buttonAddRow.Margin = new System.Windows.Forms.Padding(4);
             this.buttonAddRow.Name = "buttonAddRow";
             this.buttonAddRow.Size = new System.Drawing.Size(165, 71);
@@ -416,7 +417,7 @@
             // buttonSave2DB
             // 
             this.buttonSave2DB.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSave2DB.Location = new System.Drawing.Point(972, 370);
+            this.buttonSave2DB.Location = new System.Drawing.Point(972, 392);
             this.buttonSave2DB.Margin = new System.Windows.Forms.Padding(4);
             this.buttonSave2DB.Name = "buttonSave2DB";
             this.buttonSave2DB.Size = new System.Drawing.Size(165, 71);
@@ -430,10 +431,10 @@
             this.buttonReadWeight.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonReadWeight.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.buttonReadWeight.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonReadWeight.Location = new System.Drawing.Point(972, 449);
+            this.buttonReadWeight.Location = new System.Drawing.Point(972, 471);
             this.buttonReadWeight.Margin = new System.Windows.Forms.Padding(4);
             this.buttonReadWeight.Name = "buttonReadWeight";
-            this.buttonReadWeight.Size = new System.Drawing.Size(165, 251);
+            this.buttonReadWeight.Size = new System.Drawing.Size(165, 229);
             this.buttonReadWeight.TabIndex = 9;
             this.buttonReadWeight.Text = "Взвесить";
             this.buttonReadWeight.UseVisualStyleBackColor = false;
@@ -450,11 +451,24 @@
             this.saveFileDialog_Save2File.Filter = "ves files (*.ves)|*.ves|All files (*.*)|*.*";
             this.saveFileDialog_Save2File.RestoreDirectory = true;
             // 
+            // checkBoxDB
+            // 
+            this.checkBoxDB.AutoSize = true;
+            this.checkBoxDB.Checked = true;
+            this.checkBoxDB.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBoxDB.Location = new System.Drawing.Point(1044, 286);
+            this.checkBoxDB.Name = "checkBoxDB";
+            this.checkBoxDB.Size = new System.Drawing.Size(67, 20);
+            this.checkBoxDB.TabIndex = 10;
+            this.checkBoxDB.Text = "и в БД";
+            this.checkBoxDB.UseVisualStyleBackColor = true;
+            // 
             // FaceForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1140, 705);
+            this.Controls.Add(this.checkBoxDB);
             this.Controls.Add(this.buttonReadWeight);
             this.Controls.Add(this.buttonSave2DB);
             this.Controls.Add(this.buttonAddRow);
@@ -487,6 +501,7 @@
             this.groupBoxMonitorsSets.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView_MonitorsSet)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -516,6 +531,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog_ReadFromFile;
         private System.Windows.Forms.SaveFileDialog saveFileDialog_Save2File;
         private System.Windows.Forms.CheckedListBox checkedListBoxTypes;
+        private System.Windows.Forms.CheckBox checkBoxDB;
     }
 }
 
