@@ -29,7 +29,9 @@
         private void InitializeComponent()
         {
             this.groupBoxType = new System.Windows.Forms.GroupBox();
-            this.checkedListBoxTypes = new System.Windows.Forms.CheckedListBox();
+            this.radioButtonTypeLLI = new System.Windows.Forms.RadioButton();
+            this.radioButtonTypeSLI = new System.Windows.Forms.RadioButton();
+            this.radioButtonTypeBoth = new System.Windows.Forms.RadioButton();
             this.tabs = new System.Windows.Forms.TabControl();
             this.tabSamples = new System.Windows.Forms.TabPage();
             this.groupBoxSamples = new System.Windows.Forms.GroupBox();
@@ -76,33 +78,53 @@
             // groupBoxType
             // 
             this.groupBoxType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxType.Controls.Add(this.checkedListBoxTypes);
+            this.groupBoxType.Controls.Add(this.radioButtonTypeLLI);
+            this.groupBoxType.Controls.Add(this.radioButtonTypeSLI);
+            this.groupBoxType.Controls.Add(this.radioButtonTypeBoth);
             this.groupBoxType.Location = new System.Drawing.Point(972, 2);
             this.groupBoxType.Margin = new System.Windows.Forms.Padding(4);
             this.groupBoxType.Name = "groupBoxType";
             this.groupBoxType.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBoxType.Size = new System.Drawing.Size(165, 123);
+            this.groupBoxType.Size = new System.Drawing.Size(165, 103);
             this.groupBoxType.TabIndex = 3;
             this.groupBoxType.TabStop = false;
             this.groupBoxType.Text = "Тип";
             // 
-            // checkedListBoxTypes
+            // radioButtonTypeLLI
             // 
-            this.checkedListBoxTypes.BackColor = System.Drawing.SystemColors.MenuBar;
-            this.checkedListBoxTypes.CheckOnClick = true;
-            this.checkedListBoxTypes.FormattingEnabled = true;
-            this.checkedListBoxTypes.Items.AddRange(new object[] {
-            "КЖИ и ДЖИ",
-            "КЖИ",
-            "ДЖИ"});
-            this.checkedListBoxTypes.Location = new System.Drawing.Point(14, 22);
-            this.checkedListBoxTypes.Name = "checkedListBoxTypes";
-            this.checkedListBoxTypes.Size = new System.Drawing.Size(140, 89);
-            this.checkedListBoxTypes.TabIndex = 10;
-            this.checkedListBoxTypes.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBoxTypes_ItemCheck);
-            this.checkedListBoxTypes.Click += new System.EventHandler(this.button_CheckedListBoxTypesClick);
-            this.checkedListBoxTypes.SelectedValueChanged += new System.EventHandler(this.CheckedListBoxTypesDobuleClick);
-            this.checkedListBoxTypes.DoubleClick += new System.EventHandler(this.CheckedListBoxTypesDobuleClick);
+            this.radioButtonTypeLLI.AutoSize = true;
+            this.radioButtonTypeLLI.Location = new System.Drawing.Point(16, 74);
+            this.radioButtonTypeLLI.Name = "radioButtonTypeLLI";
+            this.radioButtonTypeLLI.Size = new System.Drawing.Size(58, 20);
+            this.radioButtonTypeLLI.TabIndex = 13;
+            this.radioButtonTypeLLI.Text = "ДЖИ";
+            this.radioButtonTypeLLI.UseVisualStyleBackColor = true;
+            this.radioButtonTypeLLI.CheckedChanged += new System.EventHandler(this.RadioButtonsCheckedChanges);
+            // 
+            // radioButtonTypeSLI
+            // 
+            this.radioButtonTypeSLI.AutoSize = true;
+            this.radioButtonTypeSLI.Location = new System.Drawing.Point(16, 48);
+            this.radioButtonTypeSLI.Name = "radioButtonTypeSLI";
+            this.radioButtonTypeSLI.Size = new System.Drawing.Size(57, 20);
+            this.radioButtonTypeSLI.TabIndex = 12;
+            this.radioButtonTypeSLI.Text = "КЖИ";
+            this.radioButtonTypeSLI.UseVisualStyleBackColor = true;
+            this.radioButtonTypeSLI.CheckedChanged += new System.EventHandler(this.RadioButtonsCheckedChanges);
+            // 
+            // radioButtonTypeBoth
+            // 
+            this.radioButtonTypeBoth.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.radioButtonTypeBoth.AutoSize = true;
+            this.radioButtonTypeBoth.Checked = true;
+            this.radioButtonTypeBoth.Location = new System.Drawing.Point(16, 22);
+            this.radioButtonTypeBoth.Name = "radioButtonTypeBoth";
+            this.radioButtonTypeBoth.Size = new System.Drawing.Size(103, 20);
+            this.radioButtonTypeBoth.TabIndex = 11;
+            this.radioButtonTypeBoth.TabStop = true;
+            this.radioButtonTypeBoth.Text = "КЖИ и ДЖИ";
+            this.radioButtonTypeBoth.UseVisualStyleBackColor = true;
+            this.radioButtonTypeBoth.CheckedChanged += new System.EventHandler(this.RadioButtonsCheckedChanges);
             // 
             // tabs
             // 
@@ -380,10 +402,10 @@
             // 
             this.buttonReadFromFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonReadFromFile.Enabled = false;
-            this.buttonReadFromFile.Location = new System.Drawing.Point(972, 133);
+            this.buttonReadFromFile.Location = new System.Drawing.Point(972, 113);
             this.buttonReadFromFile.Margin = new System.Windows.Forms.Padding(4);
             this.buttonReadFromFile.Name = "buttonReadFromFile";
-            this.buttonReadFromFile.Size = new System.Drawing.Size(165, 71);
+            this.buttonReadFromFile.Size = new System.Drawing.Size(165, 73);
             this.buttonReadFromFile.TabIndex = 5;
             this.buttonReadFromFile.Text = "Считать из файла";
             this.buttonReadFromFile.UseVisualStyleBackColor = true;
@@ -453,6 +475,7 @@
             // 
             // checkBoxDB
             // 
+            this.checkBoxDB.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.checkBoxDB.AutoSize = true;
             this.checkBoxDB.Checked = true;
             this.checkBoxDB.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -484,6 +507,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FaceForm_Closing);
             this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.FaceForm_KeyPress);
             this.groupBoxType.ResumeLayout(false);
+            this.groupBoxType.PerformLayout();
             this.tabs.ResumeLayout(false);
             this.tabSamples.ResumeLayout(false);
             this.groupBoxSamples.ResumeLayout(false);
@@ -530,8 +554,10 @@
         private System.Windows.Forms.DataGridView dataGridView_Monitors;
         private System.Windows.Forms.OpenFileDialog openFileDialog_ReadFromFile;
         private System.Windows.Forms.SaveFileDialog saveFileDialog_Save2File;
-        private System.Windows.Forms.CheckedListBox checkedListBoxTypes;
         private System.Windows.Forms.CheckBox checkBoxDB;
+        private System.Windows.Forms.RadioButton radioButtonTypeLLI;
+        private System.Windows.Forms.RadioButton radioButtonTypeSLI;
+        private System.Windows.Forms.RadioButton radioButtonTypeBoth;
     }
 }
 
