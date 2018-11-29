@@ -49,8 +49,7 @@ namespace SWeight
             dataAdapter.Fill(ds);
             dgv.DataSource = ds.Tables[0];
             con.Close();
-            if (dgv.RowCount == 0) return;
-            dgv.CurrentCell = dgv[0, dgv.RowCount - 1];
+            if (dgv.RowCount != 0) dgv.CurrentCell = dgv[0, dgv.RowCount - 1];
             if (!dgv.Name.Contains("Set"))
             {
                 dgv.Columns[0].ReadOnly = true;
@@ -76,7 +75,7 @@ namespace SWeight
                     }
                 }
             }
-            if (isFirst && !dgv.Name.Contains("Set")) dgv.CurrentCell = dgv.Rows[dgv.Rows.Count - 1].Cells[sliIndex - 1];
+            if (isFirst && !dgv.Name.Contains("Set") && dgv.RowCount != 0) dgv.CurrentCell = dgv.Rows[dgv.Rows.Count - 1].Cells[sliIndex - 1];
         }
 
         public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name, SqlConnection con)

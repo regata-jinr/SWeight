@@ -154,16 +154,6 @@ namespace SWeight
                     {
                         MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Выберите одинаковые партии", "Match", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         return;
-                        //TODO: add opp. to search and select row in dgv by given file name
-                        //DialogResult dialogResult = MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Хотите выбрать одинаковые партии?", "Match", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-                        //if (dialogResult == DialogResult.OK)
-                        //{
-                        //    SelectStringByValues(tabDgvs[current.Name][0], FileNameArray)
-                        //}
-                        //else if (dialogResult == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
                     }
                 }
 
@@ -177,26 +167,7 @@ namespace SWeight
             {
                 return;
             }
-
         }
-
-        //TODO: add opp. to search and select row in dgv by given file name
-        //private void SelectStringByValues(DataGridView dgv, string[] strArr)
-        //{
-        //    int rowIndex;
-        //    foreach (DataGridViewRow row in dgv.Rows)
-        //    {
-        //        for (var j = 0; j < 5; ++j)
-        //        {
-        //            if (row.Cells[0].Value.ToString().Equals(strArr[j]))
-        //            {
-        //            }
-        //            else
-        //            {
-        //            }
-        //        }
-        //    }
-        //}
 
         private void buttonSave2File_Click(object sender, EventArgs e)
         {
@@ -251,7 +222,6 @@ namespace SWeight
                 else return;
             }
             else { return; }
-            
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)
