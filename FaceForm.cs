@@ -49,7 +49,6 @@ namespace SWeight
             tabTables.Add("tabSamples", "table_Sample");
             tabTables.Add("tabStandarts", "table_SRM");
             tabTables.Add("tabMonitors", "table_Monitor");
-            checkedListBoxTypes.SetItemChecked(0, true);
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Text += version.Substring(0, version.Length - 2);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"], con);
@@ -68,7 +67,7 @@ namespace SWeight
 
         private SqlConnection Connect2DB()
         {
-            string connetionString = ConfigurationManager.ConnectionStrings[0].ConnectionString;
+            string connetionString = Properties.Resources.conn;
             try
             {
                 SqlConnection cnn = new SqlConnection(connetionString);
@@ -155,16 +154,6 @@ namespace SWeight
                     {
                         MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Выберите одинаковые партии", "Match", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                         return;
-                        //TODO: add opp. to search and select row in dgv by given file name
-                        //DialogResult dialogResult = MessageBox.Show($"Выбранная партия не совпадает с партией записанной в файле. Хотите выбрать одинаковые партии?", "Match", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-                        //if (dialogResult == DialogResult.OK)
-                        //{
-                        //    SelectStringByValues(tabDgvs[current.Name][0], FileNameArray)
-                        //}
-                        //else if (dialogResult == DialogResult.Cancel)
-                        //{
-                        //    break;
-                        //}
                     }
                 }
 
@@ -177,25 +166,6 @@ namespace SWeight
             else
             {
                 return;
-            }
-
-        }
-
-        //TODO: add opp. to search and select row in dgv by given file name
-        private void SelectStringByValues(DataGridView dgv, string[] strArr)
-        {
-            int rowIndex;
-            foreach (DataGridViewRow row in dgv.Rows)
-            {
-                for (var j = 0; j < 5; ++j)
-                {
-                    if (row.Cells[0].Value.ToString().Equals(strArr[j]))
-                    {
-                    }
-                    else
-                    {
-                    }
-                }
             }
         }
 
@@ -248,7 +218,8 @@ namespace SWeight
             if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
             {
                 CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
-                return;
+                if (checkBoxDB.Checked) buttonSave2DB_Click(sender, e);
+                else return;
             }
             else { return; }
         }
@@ -316,9 +287,8 @@ namespace SWeight
 
             tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
 
-            Debug.WriteLine(checkedListBoxTypes.GetItemChecked(0).ToString());
 
-            if (checkedListBoxTypes.GetItemChecked(0))
+            if (radioButtonTypeBoth.Checked)
             {
                 if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
                 {
@@ -336,29 +306,31 @@ namespace SWeight
             {
                 if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
                 tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
+                tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex].Selected = true;
             }
         }
 
-        private void checkedListBoxTypes_ItemCheck(object sender, ItemCheckEventArgs e)
-        {
-            if (checkedListBoxTypes.CheckedItems.Count >= 1 && e.CurrentValue != CheckState.Checked)
-            {
-                for (int ix = 0; ix < checkedListBoxTypes.Items.Count; ++ix)
-                    if (ix != e.Index) checkedListBoxTypes.SetItemChecked(ix, false);
-            }
+
+        private void RadioButtonsCheckedChanges(object sender, EventArgs e) {
             TabPage current = tabs.SelectedTab;
-            tabDgvs[current.Name][1].Focus();
-            CommonSelectionMechanics(tabDgvs[current.Name][1]);
-        }
-
-        private void button_CheckedListBoxTypesClick(object sender, EventArgs e)
-        {
-            if (checkedListBoxTypes.CheckedItems.Count == 0) checkedListBoxTypes.SetItemChecked(0, true);
-        }
-
-        private void CheckedListBoxTypesDobuleClick(object sender, EventArgs e)
-        {
-            button_CheckedListBoxTypesClick(sender, e);
+            var dgv = tabDgvs[current.Name][1];
+            int sliColIndex = 0, lliColIndex = 0;
+            currRowIndex = dgv.CurrentCell.RowIndex;
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                if (col.HeaderText.Contains("КЖИ")) sliColIndex = col.Index;
+                if (col.HeaderText.Contains("ДЖИ")) lliColIndex = col.Index;
+            }
+            if (radioButtonTypeBoth.Checked || radioButtonTypeSLI.Checked)
+            {
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
+            }
+            else
+            {
+                dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
+                dgv.Rows[currRowIndex].Cells[lliColIndex].Selected = true;
+            }
         }
 
         private void datagridview_SamplesSelectionChanged(object sender, EventArgs e)
@@ -380,21 +352,21 @@ namespace SWeight
                 if (col.HeaderText.Contains("КЖИ")) sliColIndex = col.Index;
                 if (col.HeaderText.Contains("ДЖИ")) lliColIndex = col.Index;
             }
-            if (checkedListBoxTypes.GetItemChecked(0) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ") && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            if (radioButtonTypeBoth.Checked && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ") && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
             {
                 Debug.WriteLine($"See that both types checked and non weight cell chosen:");
                 Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
                 dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
                 dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
             }
-            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(2) && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
+            else if (radioButtonTypeSLI.Checked && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
             {
                 Debug.WriteLine($"See that SLI types checked and non sli-weight cell chosen:");
                 Debug.WriteLine($"Current position: row-{currRowIndex}, col-{sliColIndex}");
                 dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[sliColIndex];
                 dgv.Rows[currRowIndex].Cells[sliColIndex].Selected = true;
             }
-            else if (!checkedListBoxTypes.GetItemChecked(0) && !checkedListBoxTypes.GetItemChecked(1) && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ"))
+            else if (radioButtonTypeLLI.Checked && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ"))
             {
                 Debug.WriteLine($"See that LLI types checked and non lli-weight cell chosen:");
                 Debug.WriteLine($"Current position: row-{currRowIndex}, col-{lliColIndex}");
