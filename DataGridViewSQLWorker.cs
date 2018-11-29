@@ -86,7 +86,6 @@ namespace SWeight
                 int cnt;
                 double setWeight;
                 var temStr = "";
-                var start = 1;
                 Dictionary<string,string> conditionalDict = new Dictionary<string, string>();
                 foreach (DataGridViewColumn col in dgvs[0].Columns)
                     conditionalDict.Add(col.Name, dgvs[0].SelectedCells[col.Index].Value.ToString());
@@ -98,14 +97,9 @@ namespace SWeight
                 sCmd.Connection = con;
                 foreach (DataGridViewRow row in dgvs[1].Rows)
                 {
-                    start = 1;
                     temStr = dgvs[1].Rows[row.Index].Cells[0].Value.ToString();
                     // patch for fucking A_Client_Sample_ID should be on the second place in the table
-                    if (dgvs[1].Name.Contains("Samples"))
-                    {
-                        temStr = temStr.Substring(1, temStr.Length-1);
-                        start = 2;
-                    }
+                    if (dgvs[1].Name.Contains("Samples")) temStr = temStr.Substring(1, temStr.Length-1);
                     conditionalDict.Add(dgvs[1].Columns[0].Name, temStr);
                     for (int i = 1; i < dgvs[1].ColumnCount; ++i)
                     {

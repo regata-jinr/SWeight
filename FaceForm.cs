@@ -67,7 +67,7 @@ namespace SWeight
 
         private SqlConnection Connect2DB()
         {
-            string connetionString = ConfigurationManager.ConnectionStrings[0].ConnectionString;
+            string connetionString = Properties.Resources.conn;
             try
             {
                 SqlConnection cnn = new SqlConnection(connetionString);
