@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Collections;
+using System.Deployment.Application;
 
 //TODO: add try catch;
 //TODO: add mechnism of weighting for selected cell
@@ -27,6 +28,15 @@ namespace SWeight
 
         private void InitialsSettings()
         {
+            //update message
+            if (ApplicationDeployment.IsNetworkDeployed)
+            {
+                ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
+                if (current.IsFirstRun)
+                    MessageBox.Show($"",$"В новой версии программы {Application.ProductVersion} исправлены ошибки с начальным положением активной ячейки для взвешивания при смене типа образцов. Исправлена проблема возникающая при добавлении новой партии в БД. Теперь программа обновляется автоматически, несмотря на другую подсеть корпуса.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+           
+
             con = Connect2DB();
             tabSelects.Add("tabSamples", "select Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index");
             tabSelects.Add("tabStandarts", "select SRM_Set_Name, SRM_Set_Number from table_SRM_Set");
