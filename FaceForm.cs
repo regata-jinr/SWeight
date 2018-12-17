@@ -25,6 +25,8 @@ namespace SWeight
         private Dictionary<string, DataGridView[]> tabDgvs = new Dictionary<string, DataGridView[]>();
         private SqlConnection con = new SqlConnection();
         private int currRowIndex = 0, currColIndex = 0;
+        private SerialPortsWorker worker;
+       
 
         private void InitialsSettings()
         {
@@ -33,7 +35,7 @@ namespace SWeight
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
                 if (current.IsFirstRun)
-                    MessageBox.Show($"",$"В новой версии программы {Application.ProductVersion} исправлены ошибки с начальным положением активной ячейки для взвешивания при смене типа образцов. Исправлена проблема возникающая при добавлении новой партии в БД. Теперь программа обновляется автоматически, несмотря на другую подсеть корпуса.", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"В новой версии программы {Application.ProductVersion} оптимизирован процесс получения данных от весов.", $"Обновление весовой программы", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
            
 
@@ -64,7 +66,8 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"], con);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"], con);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"], con);
-        }
+            worker = new SerialPortsWorker();
+    }
 
         public FaceForm()
         {
@@ -292,8 +295,6 @@ namespace SWeight
                 MessageBox.Show("Please choose one of the lines from the top table.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-
-            SerialPortsWorker worker = new SerialPortsWorker();
 
             tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
 
