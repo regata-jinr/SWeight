@@ -13,6 +13,61 @@ namespace SWeight
     {
         private static Dictionary<string, string> colHeaders = new Dictionary<string, string>();
 
+
+        private static double RunQuery(string query, bool scalar=false)
+        {
+            string connetionString = Properties.Resources.conn;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connetionString))
+                {
+                    using (SqlCommand sCmd = new SqlCommand(query, con))
+                    {
+                        con.Open();
+                        if (scalar)
+                        {
+                            if (sCmd.ExecuteScalar() is int)
+                                return (int) sCmd.ExecuteScalar();
+                            if (sCmd.ExecuteScalar() is float)
+                                return (float) sCmd.ExecuteScalar();
+                            throw new InvalidCastException();
+                        }
+                        else return sCmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Can not open connection!\n\n\n\n {ex.ToString()}");
+                return 0;
+            }
+        }
+
+        private static DataSet GetDataSet(string query)
+        {
+            string connetionString = Properties.Resources.conn;
+            try
+            {
+                using (SqlConnection con = new SqlConnection(connetionString))
+                {
+                    using (var dataAdapter = new SqlDataAdapter(query, con))
+                    {
+                        con.Open();
+                        using (var ds = new DataSet())
+                        {
+                            dataAdapter.Fill(ds);
+                            return ds;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Can not open connection!\n\n\n\n {ex.ToString()}");
+                return null;
+            }
+        }
+
         static DataGridViewSQLWorker()
         {
             colHeaders.Add("F_Country_Code", "Код страны");
@@ -37,18 +92,12 @@ namespace SWeight
             colHeaders.Add("Monitor_LLI_Weight", "вес, г (ДЖИ)");
         }
 
-        public static void DataGridSqlFilling(DataGridView dgv, string select, SqlConnection con)
+        public static void DataGridSqlFilling(DataGridView dgv, string select)
         {
             Debug.WriteLine($"Start filling of {dgv.Name}:");
-            if (con.State == ConnectionState.Closed)
-                con.Open();
-            var dataAdapter = new SqlDataAdapter(select, con);
-            Debug.WriteLine($"Query text: \n {select}:");
-            var commandBuilder = new SqlCommandBuilder(dataAdapter);
-            var ds = new DataSet();
-            dataAdapter.Fill(ds);
+            Debug.WriteLine($"Query text: \n {select}");
+            var ds = GetDataSet(select);
             dgv.DataSource = ds.Tables[0];
-            con.Close();
             if (dgv.RowCount != 0) dgv.CurrentCell = dgv[0, dgv.RowCount - 1];
             if (!dgv.Name.Contains("Set"))
             {
@@ -56,29 +105,11 @@ namespace SWeight
                 if (dgv.Name != "dataGridView_Samples") dgv.Columns[1].Visible = false;
                 else dgv.Columns[3].ValueType = typeof(double);
             }
-            var isFirst = true;
-            var sliIndex = 0;
             foreach (DataGridViewColumn col in dgv.Columns)
-            {
                 col.HeaderText = colHeaders[col.Name];
-                if (col.HeaderText.Contains("вес"))
-                {
-                    sliIndex = col.Index;
-                    foreach (DataGridViewRow row in dgv.Rows)
-                    {
-                        dgv.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.PaleTurquoise;
-                        if ((string.IsNullOrEmpty(dgv.Rows[row.Index].Cells[col.Index].Value.ToString()) || dgv.Rows[row.Index].Cells[col.Index].Value.ToString() == "0") && isFirst)
-                        {
-                            dgv.CurrentCell = dgv.Rows[row.Index].Cells[col.Index];
-                            isFirst = false;
-                        }
-                    }
-                }
-            }
-            if (isFirst && !dgv.Name.Contains("Set") && dgv.RowCount != 0) dgv.CurrentCell = dgv.Rows[dgv.Rows.Count - 1].Cells[sliIndex - 1];
         }
 
-        public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name, SqlConnection con)
+        public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name)
         {
             try
             {
@@ -86,15 +117,11 @@ namespace SWeight
                 int cnt;
                 double setWeight;
                 var temStr = "";
+                string query = "";
                 Dictionary<string,string> conditionalDict = new Dictionary<string, string>();
                 foreach (DataGridViewColumn col in dgvs[0].Columns)
                     conditionalDict.Add(col.Name, dgvs[0].SelectedCells[col.Index].Value.ToString());
                 Dictionary<string, string> valuesDict = new Dictionary<string, string>();
-                if (con.State == ConnectionState.Closed)
-                    con.Open();
-                SqlCommand sCmd = new SqlCommand();
-                sCmd.CommandType = CommandType.Text;
-                sCmd.Connection = con;
                 foreach (DataGridViewRow row in dgvs[1].Rows)
                 {
                     temStr = dgvs[1].Rows[row.Index].Cells[0].Value.ToString();
@@ -107,27 +134,26 @@ namespace SWeight
                         valuesDict.Add(dgvs[1].Columns[i].Name, dgvs[1].Rows[row.Index].Cells[i].Value.ToString());
 
                     }
-                    sCmd.CommandText = GenerateCountQuery(conditionalDict, table_name);
-                    cnt = (int)sCmd.ExecuteScalar();
+                    query = GenerateCountQuery(conditionalDict, table_name);
+                    cnt = (int)RunQuery(query, true); 
                     Debug.WriteLine($"Number of elements(samples,srms,monitors) in {table_name} from selected set is {cnt}");
                     if (!table_name.ToLower().Contains("sample"))
-                        sCmd.CommandText = GenerateSetWeightQuery(conditionalDict, table_name);
-                    setWeight = Convert.ToDouble(sCmd.ExecuteScalar());
+                        query = GenerateSetWeightQuery(conditionalDict, table_name);
+                    setWeight = Convert.ToDouble(RunQuery(query, true));
                     Debug.WriteLine($"Weight of set of [samples,srms,monitors] is {setWeight}");
                    
-                    if (cnt == 1) { sCmd.CommandText = GenerateUpdateQuery(conditionalDict, valuesDict, table_name); }
-                    else if (cnt == 0) { sCmd.CommandText = GenerateInsertQuery(conditionalDict, valuesDict, table_name, setWeight); }
+                    if (cnt == 1) { query = GenerateUpdateQuery(conditionalDict, valuesDict, table_name); }
+                    else if (cnt == 0) { query = GenerateInsertQuery(conditionalDict, valuesDict, table_name, setWeight); }
                     else
                     {
                         MessageBox.Show($"The query might be ambiguous. Check the sql-statements.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
                     //for debug comment this
-                    sCmd.ExecuteNonQuery();
+                    RunQuery(query);
                     conditionalDict.Remove(dgvs[1].Columns[0].Name);
                     valuesDict.Clear();
                 }
-                con.Close();
             }
             catch (SqlException sqlEx) { MessageBox.Show($"SQL exception:\n {sqlEx.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
             catch (Exception ex) { MessageBox.Show($"Exception message:\n {ex.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }

@@ -58,32 +58,34 @@ namespace SWeight
 
         public static void DataGridView2CSV(DataGridView dgv,ArrayList header, string path, string AddToNum="")
         {
-            StreamWriter sW = new StreamWriter(path);
-            string delim = "\t";
-            string val = "";
-            foreach (string head in header)
-                sW.WriteLine(head);
-
-            for (int row = 0; row < dgv.RowCount; ++row)
+            using (StreamWriter sW = new StreamWriter(path))
             {
-                string lines = (row+1).ToString("D2");
-                //we save only first three columns, so instead dgv.ColumnCount we will use just 3
-                for (int col = 0; col < dgv.ColumnCount; ++col)
-                {
-                    if (col == 1) continue;
-                    if (col == 0)
-                        delim += AddToNum;
-                    val = dgv.Rows[row].Cells[col].Value.ToString();
-                    if (string.IsNullOrEmpty(val))
-                        val = "0";
-                    lines += (string.IsNullOrEmpty(lines) ? "" : delim) + val;
-                    if (col == 0)
-                        delim = "\t";
+                string delim = "\t";
+                string val = "";
+                foreach (string head in header)
+                    sW.WriteLine(head);
 
+                for (int row = 0; row < dgv.RowCount; ++row)
+                {
+                    string lines = (row + 1).ToString("D2");
+                    //we save only first three columns, so instead dgv.ColumnCount we will use just 3
+                    for (int col = 0; col < dgv.ColumnCount; ++col)
+                    {
+                        if (col == 1) continue;
+                        if (col == 0)
+                            delim += AddToNum;
+                        val = dgv.Rows[row].Cells[col].Value.ToString();
+                        if (string.IsNullOrEmpty(val))
+                            val = "0";
+                        lines += (string.IsNullOrEmpty(lines) ? "" : delim) + val;
+                        if (col == 0)
+                            delim = "\t";
+
+                    }
+                    sW.WriteLine(lines);
                 }
-                sW.WriteLine(lines);
+                sW.Close();
             }
-            sW.Close();
             MessageBox.Show("Сохранение завершено!");
         }
     }
