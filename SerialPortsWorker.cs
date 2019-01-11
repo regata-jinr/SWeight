@@ -32,7 +32,7 @@ namespace SWeight
                 port = new SerialPort(com, 9600, Parity.None, 8, StopBits.One);
                 port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                 port.Open();
-                //todo: I'm not sure that it's a good ide to use pause here. I should find out how to get only one line form one call.
+                //todo: I'm not sure that it's a good idea to use pause here. I should find out how to get only one line form one call.
                 System.Threading.Thread.Sleep(1000);
             }
             catch (UnauthorizedAccessException)
@@ -47,7 +47,6 @@ namespace SWeight
             if (match.Success)
                 weight = Convert.ToDouble(match.Groups[1].Value, CultureInfo.InvariantCulture);
             Debug.WriteLine($"Reading weight is {weight}");
-            port.Close();
             return;
         }
 

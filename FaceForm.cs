@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections;
 using System.Deployment.Application;
+using System.Drawing;
 
 //TODO: add try catch;
 //TODO: add mechnism of weighting for selected cell
@@ -23,7 +24,6 @@ namespace SWeight
         private Dictionary<string, string> tabButtonName = new Dictionary<string, string>();
         private Dictionary<string, string> tabTables = new Dictionary<string, string>();
         private Dictionary<string, DataGridView[]> tabDgvs = new Dictionary<string, DataGridView[]>();
-        private SqlConnection con = new SqlConnection();
         private int currRowIndex = 0, currColIndex = 0;
         private SerialPortsWorker worker;
        
@@ -35,11 +35,10 @@ namespace SWeight
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
                 if (current.IsFirstRun)
-                    MessageBox.Show($"В новой версии программы {Application.ProductVersion} оптимизирован процесс получения данных от весов.", $"Обновление весовой программы", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"В новой версии программы {Application.ProductVersion} устранены неточности в выделении при изменении типа измерений. Номер взвешиваемого образца подсвчеивается серым цветом.", $"Обновление весовой программы", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
            
 
-            con = Connect2DB();
             tabSelects.Add("tabSamples", "select Country_Code as F_Country_Code , Client_ID as F_Client_ID, Year as F_Year, Sample_Set_ID as F_Sample_Set_ID, Sample_Set_Index as F_Sample_Set_Index from table_Sample_Set order by year,Sample_Set_ID, Country_Code, Client_ID,  Sample_Set_Index");
             tabSelects.Add("tabStandarts", "select SRM_Set_Name, SRM_Set_Number from table_SRM_Set");
             tabSelects.Add("tabMonitors", "select Monitor_Set_Name, Monitor_Set_Number from table_Monitor_Set");
@@ -63,9 +62,9 @@ namespace SWeight
             tabTables.Add("tabMonitors", "table_Monitor");
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             Text += version.Substring(0, version.Length - 2);
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"], con);
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"], con);
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"]);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"]);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"]);
             worker = new SerialPortsWorker();
     }
 
@@ -75,7 +74,7 @@ namespace SWeight
             tabs.Selecting += new TabControlCancelEventHandler(tabs_Selecting);
             KeyPreview = true;
             InitialsSettings();
-            DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"], con);
+            DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"]);
         }
 
         private SqlConnection Connect2DB()
@@ -83,9 +82,13 @@ namespace SWeight
             string connetionString = Properties.Resources.conn;
             try
             {
+                //todo add using for avoiding memory leaks
+                //    using (SqlConnection cnn = new SqlConnection(connetionString))
+                //   {
                 SqlConnection cnn = new SqlConnection(connetionString);
-                cnn.Open();
-                return cnn;
+                    cnn.Open();
+                    return cnn;
+             //   }
             }
             catch (Exception ex)
             {
@@ -113,7 +116,8 @@ namespace SWeight
             
             DataGridViewRow selectedRow = dataGridView_SamplesSet.Rows[index];
             string select = $"select F_Sample_Set_Index+A_Sample_ID as A_Sample_ID,A_Client_Sample_ID as A_Client_Sample_ID, P_Weighting_SLI, P_Weighting_LLI from table_Sample where F_Country_Code = '{selectedRow.Cells[0].Value}' and F_Client_ID = '{selectedRow.Cells[1].Value}' and F_Year = '{selectedRow.Cells[2].Value}' and F_Sample_Set_ID = '{selectedRow.Cells[3].Value}' and F_Sample_Set_Index = '{selectedRow.Cells[4].Value}'";
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Samples, select);
+            ColorizeAndSelect(dataGridView_Samples);
             if (dataGridView_Samples.RowCount == 0) return;
             dataGridView_Samples.Columns[1].ReadOnly = true;
             dataGridView_Samples.Focus();
@@ -127,7 +131,8 @@ namespace SWeight
             if (index < 0) return;
             DataGridViewRow selectedRow = dataGridView_StandartsSet.Rows[index];
             string select = $"select SRM_Number,1 as skip, SRM_SLI_Weight, SRM_LLI_Weight from table_SRM  where SRM_Set_Name = '{selectedRow.Cells[0].Value}' and SRM_Set_Number = '{selectedRow.Cells[1].Value}'";
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Standarts, select);
+            ColorizeAndSelect(dataGridView_Standarts);
             if (dataGridView_Standarts.RowCount == 0) return;
             dataGridView_Standarts.Focus();
         }
@@ -139,7 +144,8 @@ namespace SWeight
             if (index < 0) return;
             DataGridViewRow selectedRow = dataGridView_MonitorsSet.Rows[index];
             string select = $"select Monitor_Number,1 as skip,Monitor_SLI_Weight, Monitor_LLI_Weight from table_Monitor where Monitor_Set_Name = '{selectedRow.Cells[0].Value}' and Monitor_Set_Number = '{selectedRow.Cells[1].Value}'";
-            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select, con);
+            DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_Monitors, select);
+            ColorizeAndSelect(dataGridView_Monitors);
             if (dataGridView_Monitors.RowCount == 0) return;
             dataGridView_Monitors.Focus();
         }
@@ -266,7 +272,7 @@ namespace SWeight
         private void buttonSave2DB_Click(object sender, EventArgs e)
         {
             TabPage current = tabs.SelectedTab;
-            DataGridViewSQLWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name], con);
+            DataGridViewSQLWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name]);
             // return;
         }
 
@@ -319,12 +325,15 @@ namespace SWeight
                 tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
                 tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex].Selected = true;
             }
+
+            
         }
 
 
         private void RadioButtonsCheckedChanges(object sender, EventArgs e) {
             TabPage current = tabs.SelectedTab;
             var dgv = tabDgvs[current.Name][1];
+            if (dgv.RowCount == 0) return;
             int sliColIndex = 0, lliColIndex = 0;
             currRowIndex = dgv.CurrentCell.RowIndex;
             foreach (DataGridViewColumn col in dgv.Columns)
@@ -350,6 +359,7 @@ namespace SWeight
             CommonSelectionMechanics(tabDgvs[current.Name][1]);
         }
 
+
         private void CommonSelectionMechanics(DataGridView dgv)
         {
             if (dgv.CurrentCell == null) return;
@@ -363,6 +373,7 @@ namespace SWeight
                 if (col.HeaderText.Contains("КЖИ")) sliColIndex = col.Index;
                 if (col.HeaderText.Contains("ДЖИ")) lliColIndex = col.Index;
             }
+
             if (radioButtonTypeBoth.Checked && !dgv.Columns[currColIndex].HeaderText.Contains("ДЖИ") && !dgv.Columns[currColIndex].HeaderText.Contains("КЖИ"))
             {
                 Debug.WriteLine($"See that both types checked and non weight cell chosen:");
@@ -384,6 +395,23 @@ namespace SWeight
                 dgv.CurrentCell = dgv.Rows[currRowIndex].Cells[lliColIndex];
                 dgv.Rows[currRowIndex].Cells[lliColIndex].Selected = true;
             }
+
+            DataGridViewCellStyle styleWhite = new DataGridViewCellStyle();
+            styleWhite.BackColor = Color.White;
+            DataGridViewCellStyle styleGray = new DataGridViewCellStyle();
+            styleGray.BackColor = Color.LightGray;
+
+            if (dgv.SelectedCells.Count != 1) return;
+
+            for (int r = 0; r < dgv.RowCount; ++r)
+            {
+                if (r == dgv.SelectedCells[0].RowIndex)
+                {
+                    dgv.Rows[dgv.SelectedCells[0].RowIndex].Cells[0].Style = styleGray;
+                    continue;
+                }
+                    dgv.Rows[r].Cells[0].Style = styleWhite;
+            }
         }
 
         private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)
@@ -391,5 +419,32 @@ namespace SWeight
             if (e.KeyChar == (char)Keys.Space)
                 buttonReadWeight.PerformClick();
         }
+
+        private void ColorizeAndSelect(DataGridView dgv)
+        {
+            var isFirst = true;
+           
+
+            foreach (DataGridViewColumn col in dgv.Columns)
+            {
+                if (col.HeaderText.Contains("вес"))
+                {
+                    foreach (DataGridViewRow row in dgv.Rows)
+                    {
+                        dgv.Rows[row.Index].Cells[col.Index].Style.BackColor = Color.PaleTurquoise;
+                        if ((string.IsNullOrEmpty(dgv.Rows[row.Index].Cells[col.Index].Value.ToString()) || dgv.Rows[row.Index].Cells[col.Index].Value.ToString() == "0") && isFirst)
+                        {
+                           
+                            if (radioButtonTypeBoth.Checked) dgv.CurrentCell = dgv.Rows[row.Index].Cells[col.Index];
+                            if (radioButtonTypeSLI.Checked) dgv.CurrentCell = dgv.Rows[row.Index].Cells[dgv.ColumnCount - 2];
+                            if (radioButtonTypeLLI.Checked) dgv.CurrentCell = dgv.Rows[row.Index].Cells[dgv.ColumnCount - 1];
+                            isFirst = false;
+                        }
+                    }
+                }
+                if (isFirst && !dgv.Name.Contains("Set") && dgv.RowCount != 0) dgv.ClearSelection();
+            }
+        }
+
     }
 }

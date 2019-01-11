@@ -27,7 +27,7 @@
     <SupportUrl>http://regata.jinr.ru/</SupportUrl>
     <ProductName>SWeight</ProductName>
     <PublisherName>regata-jinr</PublisherName>
-    <ApplicationRevision>38</ApplicationRevision>
+    <ApplicationRevision>39</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -139,6 +139,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="weight.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <PublishFile Include="weight.ico">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
