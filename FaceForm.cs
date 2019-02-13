@@ -25,17 +25,18 @@ namespace SWeight
         private Dictionary<string, string> tabTables = new Dictionary<string, string>();
         private Dictionary<string, DataGridView[]> tabDgvs = new Dictionary<string, DataGridView[]>();
         private int currRowIndex = 0, currColIndex = 0;
-        private SerialPortsWorker worker;
+        //private SerialPortsWorker worker;
        
 
         private void InitialsSettings()
         {
             //update message
+            string UpdMsg = $"Устранены возможные утечки в памяти, которые могли быть причиной помех в соединении с весами. В случае, если нули снова будут появлятся в процессе взвешивания, сообщите.";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
                 if (current.IsFirstRun)
-                    MessageBox.Show($"В новой версии программы {Application.ProductVersion} устранены неточности в выделении при изменении типа измерений. Номер взвешиваемого образца подсвчеивается серым цветом.", $"Обновление весовой программы", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"В новой версии программы {Application.ProductVersion}{System.Environment.NewLine}{System.Environment.NewLine}{UpdMsg}{System.Environment.NewLine}{System.Environment.NewLine}Свои комментарии, замечания, сообщения об ошибках Вы можете сообщить мне {System.Environment.NewLine}по почте - bdrum@jinr.ru{System.Environment.NewLine}по телефону - 6 24 36{System.Environment.NewLine}лично{System.Environment.NewLine}С уважением,{System.Environment.NewLine}Борис Румянцев", $"Обновление весовой программы", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
            
 
@@ -65,7 +66,7 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"]);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"]);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"]);
-            worker = new SerialPortsWorker();
+            //worker = new SerialPortsWorker();
     }
 
         public FaceForm()
@@ -77,26 +78,7 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridSqlFilling(tabDgvs["tabSamples"][0], tabSelects["tabSamples"]);
         }
 
-        private SqlConnection Connect2DB()
-        {
-            string connetionString = Properties.Resources.conn;
-            try
-            {
-                //todo add using for avoiding memory leaks
-                //    using (SqlConnection cnn = new SqlConnection(connetionString))
-                //   {
-                SqlConnection cnn = new SqlConnection(connetionString);
-                    cnn.Open();
-                    return cnn;
-             //   }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Can not open connection!\n\n\n\n {ex.ToString()}");
-                return null;
-            }
-        }
-
+     
         void tabs_Selecting(object sender, TabControlCancelEventArgs e)
         {
             TabPage current = (sender as TabControl).SelectedTab;
@@ -302,7 +284,7 @@ namespace SWeight
                 return;
             }
 
-            tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = worker.GetWeight();
+            tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = Weighting();
 
 
             if (radioButtonTypeBoth.Checked)
@@ -446,5 +428,16 @@ namespace SWeight
             }
         }
 
+        private double Weighting()
+        {
+            double w = -1;
+            using (var worker = new SerialPortsWorker())
+            {
+                w = worker.GetWeight();
+            }
+            if (w == 0 || w == -1) MessageBox.Show("Probably some problems in scales connection. Try to restart program if no result, restart computer.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return w;
+        }
     }
+       
 }

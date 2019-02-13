@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SWeight
 {
-    class SerialPortsWorker
+    class SerialPortsWorker : IDisposable
     {
         private SerialPort port;
         private double weight;
@@ -36,21 +36,21 @@ namespace SWeight
                 System.Threading.Thread.Sleep(1000);
             }
             catch (UnauthorizedAccessException)
-            {MessageBox.Show("The scales in the sleep mode or we be not able to connect to it. Try to enable it.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);}
+            { MessageBox.Show("The scales in the sleep mode or we be not able to connect to it. Try to enable it.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
             catch (Exception ex)
-            {MessageBox.Show($"Exception has occurred in process of getting the data from scales:\n {ex.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);}
+            { MessageBox.Show($"Exception has occurred in process of getting the data from scales:\n {ex.ToString()}", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-               Match match = Regex.Match(port.ReadLine(), "^.*([0-9]+\\.[0-9]+).*$");
+            Match match = Regex.Match(port.ReadLine(), "^.*([0-9]+\\.[0-9]+).*$");
             if (match.Success)
                 weight = Convert.ToDouble(match.Groups[1].Value, CultureInfo.InvariantCulture);
             Debug.WriteLine($"Reading weight is {weight}");
             return;
         }
 
-        public double GetWeight() {return weight;}
+        public double GetWeight() { return weight; }
 
         private string FindScales()
         {
@@ -59,5 +59,17 @@ namespace SWeight
             if (scales == null) return "";
             return Regex.Match(scales["Name"].ToString(), @"\(([^)]*)\)").Groups[1].Value;
         }
+
+        public void Dispose()
+        {
+            if (port != null) port.Dispose();
+            //if (this != null) ;
+        }
+
+        ~SerialPortsWorker()
+        {
+            Dispose();
+        }
+
     }
 }
