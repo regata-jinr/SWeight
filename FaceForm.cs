@@ -31,7 +31,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"Устранены возможные утечки в памяти, которые могли быть причиной помех в соединении с весами. В случае, если нули снова будут появлятся в процессе взвешивания, сообщите.";
+            string UpdMsg = $"Уменьшена пауза между взвешиваниями. Теперь, после нажатия на кнопку 'Взвесить', кнопка станет неактивной до тех пор пока взвешивание не произойдет. В случае ошибки, программа автоматически попробует считать вес еще раз, проделав до трех попыток.";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
@@ -275,40 +275,47 @@ namespace SWeight
 
         private void buttonReadWeight_Click(object sender, EventArgs e)
         {
-            TabPage current = tabs.SelectedTab;
-            currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
-            currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
-            if (tabDgvs[current.Name][1].DataSource == null)
+            try
             {
-                MessageBox.Show("Please choose one of the lines from the top table.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+                buttonReadWeight.Enabled = false;
+                TabPage current = tabs.SelectedTab;
+                currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
+                currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
+                if (tabDgvs[current.Name][1].DataSource == null)
+                {
+                    MessageBox.Show("Please choose one of the lines from the top table.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
-            tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = Weighting();
+                tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = Weighting();
 
 
-            if (radioButtonTypeBoth.Checked)
-            {
-                if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
+                if (radioButtonTypeBoth.Checked)
+                {
+                    if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
+                    {
+                        if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
+                        tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1];
+                        tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1].Selected = true;
+                    }
+                    else if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("КЖИ"))
+                    {
+                        tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1];
+                        tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1].Selected = true;
+                    }
+                }
+                else
                 {
                     if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
-                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1];
-                    tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex - 1].Selected = true;
+                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
+                    tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex].Selected = true;
                 }
-                else if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("КЖИ"))
-                {
-                    tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1];
-                    tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex + 1].Selected = true;
-                }
-            }
-            else
-            {
-                if ((currRowIndex + 1) == tabDgvs[current.Name][1].RowCount) return;
-                tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
-                tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex].Selected = true;
-            }
 
-            
+            }
+            finally
+            {
+                buttonReadWeight.Enabled = true;
+            }
         }
 
 
@@ -428,14 +435,20 @@ namespace SWeight
             }
         }
 
-        private double Weighting()
+        private double Weighting(int n = 0)
         {
+            n++;
             double w = -1;
             using (var worker = new SerialPortsWorker())
             {
                 w = worker.GetWeight();
             }
-            if (w == 0 || w == -1) MessageBox.Show("Probably some problems in scales connection. Try to restart program if no result, restart computer.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (w == 0 || w == -1)
+            {
+                System.Threading.Thread.Sleep(1000);
+                if (n < 3) Weighting(n);
+                else MessageBox.Show("Probably some problems in scales connection. Try to restart program if no result, restart computer.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             return w;
         }
     }

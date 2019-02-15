@@ -33,7 +33,7 @@ namespace SWeight
                 port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                 port.Open();
                 //todo: I'm not sure that it's a good idea to use pause here. I should find out how to get only one line form one call.
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(500);
             }
             catch (UnauthorizedAccessException)
             { MessageBox.Show("The scales in the sleep mode or we be not able to connect to it. Try to enable it.", "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
