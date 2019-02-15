@@ -86,7 +86,6 @@ namespace SWeight
                 }
                 sW.Close();
             }
-            MessageBox.Show("Сохранение завершено!");
         }
     }
 }

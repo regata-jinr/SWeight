@@ -31,7 +31,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"Уменьшена пауза между взвешиваниями. Теперь, после нажатия на кнопку 'Взвесить', кнопка станет неактивной до тех пор пока взвешивание не произойдет. В случае ошибки, программа автоматически попробует считать вес еще раз, проделав до трех попыток.";
+            string UpdMsg = $"Уменьшена пауза между взвешиваниями. Теперь, после нажатия на кнопку 'Взвесить', кнопка станет неактивной до тех пор пока взвешивание не произойдет. В случае ошибки, программа автоматически попробует считать вес еще раз, проделав до трех попыток. Также в процессе взвешивания на рабочем столе сохраняется файл с именем 'код партии.tmp.ves'. В него сохраняются данные после каждого взвешивания. Таким образом, если вдруг, на последнем образце программа вылетела, Вы можете просто загрузить этот файл в базу. Затем зайти в программу и увидеть все веса, кроме последнего. Если все прошло нормально, после сохранения в БД программа автоматически удалит этот файл.";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
@@ -170,12 +170,11 @@ namespace SWeight
             }
         }
 
-        private void buttonSave2File_Click(object sender, EventArgs e)
+        private void PrepareForSavingFile(bool _showDialog)
         {
             TabPage current = tabs.SelectedTab;
-            string[] FileNameArray = new string[5];
-            string fileName = "";
             ArrayList header = new ArrayList();
+            string fileName = "";
             header.Add($"Код страны: ");
             header.Add($"Клиент: ");
             header.Add($"Год: ");
@@ -216,13 +215,25 @@ namespace SWeight
                 header[i + num] += tabDgvs[current.Name][0].SelectedRows[0].Cells[i].Value.ToString();
             }
             saveFileDialog_Save2File.FileName = fileName.Substring(0, fileName.Length - 1);
+            Debug.WriteLine(saveFileDialog_Save2File.FileName);
+            if (_showDialog) { 
             if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
-            {
+                    Debug.WriteLine(saveFileDialog_Save2File.FileName);
                 CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
-                if (checkBoxDB.Checked) buttonSave2DB_Click(sender, e);
-                else return;
             }
-            else { return; }
+            else CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{saveFileDialog_Save2File.FileName}.tmp.ves", add2Num);
+            Debug.WriteLine(saveFileDialog_Save2File.FileName);
+
+        }
+
+        private void buttonSave2File_Click(object sender, EventArgs e)
+        {
+            PrepareForSavingFile(true);
+            if (checkBoxDB.Checked) buttonSave2DB_Click(sender, e);
+
+            var files = Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "*.tmp.ves");
+            foreach (var file in files) File.Delete(file);
+            MessageBox.Show("Сохранение завершено!");
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)
@@ -255,7 +266,9 @@ namespace SWeight
         {
             TabPage current = tabs.SelectedTab;
             DataGridViewSQLWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name]);
-            // return;
+            var files = Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "*.tmp.ves");
+            foreach (var file in files) File.Delete(file);
+            MessageBox.Show("Сохранение завершено!");
         }
 
         private void dataGridView_Samples_DataError(object sender, DataGridViewDataErrorEventArgs anError)
@@ -289,7 +302,6 @@ namespace SWeight
 
                 tabDgvs[current.Name][1].Rows[currRowIndex].Cells[currColIndex].Value = Weighting();
 
-
                 if (radioButtonTypeBoth.Checked)
                 {
                     if (tabDgvs[current.Name][1].Columns[currColIndex].HeaderText.Contains("ДЖИ"))
@@ -314,6 +326,7 @@ namespace SWeight
             }
             finally
             {
+                PrepareForSavingFile(false);
                 buttonReadWeight.Enabled = true;
             }
         }
