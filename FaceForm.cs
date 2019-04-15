@@ -1,6 +1,4 @@
 ﻿using System.Windows.Forms;
-using System.Data.SqlClient;
-using System.Configuration;
 using System.Data;
 using System;
 using System.Collections.Generic;
@@ -31,7 +29,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"Увеличена пауза между взвешиваниями. Это должно убрать нули. Теперь, после нажатия на кнопку 'Взвесить', кнопка станет неактивной до тех пор пока взвешивание не произойдет. В случае ошибки, программа автоматически попробует считать вес еще раз, проделав до трех попыток. Также в процессе взвешивания на рабочем столе сохраняется файл с именем 'код партии.tmp.ves'. В него сохраняются данные после каждого взвешивания. Таким образом, если вдруг, на последнем образце программа вылетела, Вы можете просто загрузить этот файл в базу. Затем зайти в программу и увидеть все веса, кроме последнего. Если все прошло нормально, после сохранения в БД программа автоматически удалит этот файл.";
+            string UpdMsg = $"Отключена возможность сортировки таблиц с весами";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
@@ -66,8 +64,8 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_SamplesSet, tabSelects["tabSamples"]);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_StandartsSet, tabSelects["tabStandarts"]);
             DataGridViewSQLWorker.DataGridSqlFilling(dataGridView_MonitorsSet, tabSelects["tabMonitors"]);
-            //worker = new SerialPortsWorker();
-    }
+
+        }
 
         public FaceForm()
         {

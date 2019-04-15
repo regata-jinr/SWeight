@@ -89,6 +89,7 @@ namespace SWeight
             colHeaders.Add("Monitor_Number", "Номер монитора");
             colHeaders.Add("Monitor_SLI_Weight", "вес, г (КЖИ)");
             colHeaders.Add("Monitor_LLI_Weight", "вес, г (ДЖИ)");
+
         }
 
         public static void DataGridSqlFilling(DataGridView dgv, string select)
@@ -106,6 +107,7 @@ namespace SWeight
             }
             foreach (DataGridViewColumn col in dgv.Columns)
                 col.HeaderText = colHeaders[col.Name];
+            dgv.Columns.Cast<DataGridViewColumn>().ToList().ForEach(f => f.SortMode = DataGridViewColumnSortMode.NotSortable);
         }
 
         public static void DataGridViewSave2DB(DataGridView[] dgvs, string table_name)
