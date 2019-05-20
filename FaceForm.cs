@@ -29,7 +29,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"Отключена возможность сортировки таблиц с весами";
+            string UpdMsg = $"После сохранения в БД таблица с весами сразу обновляется содержимым БД, таким образом исключена возможность упустить ошибку сохранения данных в БД. Исправлены некоторые недочеты";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
@@ -214,10 +214,14 @@ namespace SWeight
             }
             saveFileDialog_Save2File.FileName = fileName.Substring(0, fileName.Length - 1);
             Debug.WriteLine(saveFileDialog_Save2File.FileName);
-            if (_showDialog) { 
-            if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
+            if (_showDialog) {
+                if (saveFileDialog_Save2File.ShowDialog() == DialogResult.OK)
+                {
                     Debug.WriteLine(saveFileDialog_Save2File.FileName);
-                CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
+                    CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, saveFileDialog_Save2File.FileName, add2Num);
+                    MessageBox.Show("Сохранение в файл завершено!");
+                }
+               
             }
             else CSVParser.DataGridView2CSV(tabDgvs[current.Name][1], header, $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}\\{saveFileDialog_Save2File.FileName}.tmp.ves", add2Num);
             Debug.WriteLine(saveFileDialog_Save2File.FileName);
@@ -226,12 +230,12 @@ namespace SWeight
 
         private void buttonSave2File_Click(object sender, EventArgs e)
         {
+
             PrepareForSavingFile(true);
             if (checkBoxDB.Checked) buttonSave2DB_Click(sender, e);
 
             var files = Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "*.tmp.ves");
             foreach (var file in files) File.Delete(file);
-            MessageBox.Show("Сохранение завершено!");
         }
 
         private void buttonAddRow_Click(object sender, EventArgs e)
@@ -266,7 +270,18 @@ namespace SWeight
             DataGridViewSQLWorker.DataGridViewSave2DB(tabDgvs[current.Name], tabTables[current.Name]);
             var files = Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "*.tmp.ves");
             foreach (var file in files) File.Delete(file);
-            MessageBox.Show("Сохранение завершено!");
+            MessageBox.Show("Сохранение в БД завершено!");
+
+            // reload weight tables content after saving
+            var a = new DataGridViewCellEventArgs(tabDgvs[current.Name][0].SelectedCells[0].ColumnIndex, tabDgvs[current.Name][0].SelectedCells[0].RowIndex);
+            if (current.Name == "tabSamples")
+                dataGridView_SamplesSet_CellClick(sender, a);
+            if (current.Name == "tabStandarts")
+                dataGridView_StandartsSet_CellClick(sender, a);
+            if (current.Name == "tabMonitors")
+                dataGridView_MonitorsSet_CellClick(sender, a);
+
+
         }
 
         private void dataGridView_Samples_DataError(object sender, DataGridViewDataErrorEventArgs anError)
@@ -328,7 +343,6 @@ namespace SWeight
                 buttonReadWeight.Enabled = true;
             }
         }
-
 
         private void RadioButtonsCheckedChanges(object sender, EventArgs e) {
             TabPage current = tabs.SelectedTab;
@@ -417,7 +431,10 @@ namespace SWeight
         private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Space)
+            {
+                buttonReadWeight.Focus();
                 if (buttonReadWeight.Enabled) buttonReadWeight.PerformClick();
+            }
         }
 
         private void ColorizeAndSelect(DataGridView dgv)
