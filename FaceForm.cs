@@ -29,7 +29,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"После сохранения в БД таблица с весами сразу обновляется содержимым БД, таким образом исключена возможность упустить ошибку сохранения данных в БД. Исправлены некоторые недочеты";
+            string UpdMsg = $"Теперь после взвешивания с использованием мышки фокус с таблиц с весами не пропадает, т.е. между ячейками можно перемещаться с использованием клавиш-стрелок. После сохранения в БД таблица с весами сразу обновляется содержимым БД, таким образом исключена возможность упустить ошибку сохранения данных в БД. Исправлены некоторые недочеты";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
@@ -301,10 +301,10 @@ namespace SWeight
 
         private void buttonReadWeight_Click(object sender, EventArgs e)
         {
+            TabPage current = tabs.SelectedTab;
             try
             {
                 buttonReadWeight.Enabled = false;
-                TabPage current = tabs.SelectedTab;
                 currRowIndex = tabDgvs[current.Name][1].CurrentCellAddress.Y;
                 currColIndex = tabDgvs[current.Name][1].CurrentCellAddress.X;
                 if (tabDgvs[current.Name][1].DataSource == null)
@@ -335,12 +335,12 @@ namespace SWeight
                     tabDgvs[current.Name][1].CurrentCell = tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex];
                     tabDgvs[current.Name][1].Rows[currRowIndex + 1].Cells[currColIndex].Selected = true;
                 }
-
             }
             finally
             {
                 PrepareForSavingFile(false);
                 buttonReadWeight.Enabled = true;
+                tabDgvs[current.Name][1].Focus();
             }
         }
 
@@ -431,10 +431,7 @@ namespace SWeight
         private void FaceForm_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Space)
-            {
-                buttonReadWeight.Focus();
                 if (buttonReadWeight.Enabled) buttonReadWeight.PerformClick();
-            }
         }
 
         private void ColorizeAndSelect(DataGridView dgv)
