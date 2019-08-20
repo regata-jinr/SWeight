@@ -8,6 +8,7 @@ using System.Collections;
 using System.Deployment.Application;
 using System.Drawing;
 
+
 //TODO: add try catch;
 //TODO: add mechnism of weighting for selected cell
 //TODO: hit the space should be event for weighting independent from button focus
@@ -18,6 +19,9 @@ namespace SWeight
 {
     public partial class FaceForm : Form
     {
+
+      
+
         private Dictionary<string, string> tabSelects = new Dictionary<string, string>();
         private Dictionary<string, string> tabButtonName = new Dictionary<string, string>();
         private Dictionary<string, string> tabTables = new Dictionary<string, string>();
@@ -29,7 +33,7 @@ namespace SWeight
         private void InitialsSettings()
         {
             //update message
-            string UpdMsg = $"Теперь после взвешивания с использованием мышки фокус с таблиц с весами не пропадает, т.е. между ячейками можно перемещаться с использованием клавиш-стрелок. После сохранения в БД таблица с весами сразу обновляется содержимым БД, таким образом исключена возможность упустить ошибку сохранения данных в БД. Исправлены некоторые недочеты";
+            string UpdMsg = $"Переход на новую базу данных";
             if (ApplicationDeployment.IsNetworkDeployed)
             {
                 ApplicationDeployment current = ApplicationDeployment.CurrentDeployment;
